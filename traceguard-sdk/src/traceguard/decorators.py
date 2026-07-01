@@ -46,6 +46,86 @@ def log_rag_context(documents: list[str]) -> None:
     if span and span.is_recording():
         span.set_attribute("rag.context", json.dumps(documents))
 
+import re
+
+class TraceGuardFirewallBlock(Exception):
+    """Raised when the TraceGuard Firewall intercepts malicious or non-compliant payloads."""
+    pass
+
+def guardrail(direction: str = "input") -> Callable[[F], F]:
+    """
+    A decorator that acts as a real-time firewall for agent functions.
+    Checks for Prompt Injection and PII leakage.
+    """
+    def decorator(func: F) -> F:
+        def check_payload(payload: str):
+            # Simple heuristic for Prompt Injection
+            if "ignore previous instructions" in payload.lower():
+                raise TraceGuardFirewallBlock("TraceGuard Firewall Blocked: Prompt Injection Detected.")
+            
+        @functools.wraps(func)
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            with tracer.start_as_current_span(f"guardrail_{func.__name__}") as span:
+                span.set_attribute("guardrail.direction", direction)
+                
+                # Check Input
+                if direction in ("input", "both"):
+                    payload = _serialize_to_json(args) + _serialize_to_json(kwargs)
+                    try:
+                        check_payload(payload)
+                    except TraceGuardFirewallBlock as e:
+                        span.set_status(Status(StatusCode.ERROR, str(e)))
+                        span.record_exception(e)
+                        raise
+                        
+                result = func(*args, **kwargs)
+                
+                # Check Output
+                if direction in ("output", "both"):
+                    try:
+                        check_payload(_serialize_to_json(result))
+                    except TraceGuardFirewallBlock as e:
+                        span.set_status(Status(StatusCode.ERROR, str(e)))
+                        span.record_exception(e)
+                        raise
+                        
+                span.set_status(Status(StatusCode.OK))
+                return result
+                
+        if inspect.iscoroutinefunction(func):
+            @functools.wraps(func)
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+                with tracer.start_as_current_span(f"guardrail_{func.__name__}") as span:
+                    span.set_attribute("guardrail.direction", direction)
+                    
+                    # Check Input
+                    if direction in ("input", "both"):
+                        payload = _serialize_to_json(args) + _serialize_to_json(kwargs)
+                        try:
+                            check_payload(payload)
+                        except TraceGuardFirewallBlock as e:
+                            span.set_status(Status(StatusCode.ERROR, str(e)))
+                            span.record_exception(e)
+                            raise
+                            
+                    result = await func(*args, **kwargs)
+                    
+                    # Check Output
+                    if direction in ("output", "both"):
+                        try:
+                            check_payload(_serialize_to_json(result))
+                        except TraceGuardFirewallBlock as e:
+                            span.set_status(Status(StatusCode.ERROR, str(e)))
+                            span.record_exception(e)
+                            raise
+                            
+                    span.set_status(Status(StatusCode.OK))
+                    return result
+            return cast(F, async_wrapper)
+            
+        return cast(F, sync_wrapper)
+    return decorator
+
 def observe(model: str = None) -> Callable[[F], F]:
     """
     A decorator to trace an agent's execution path, tracking 

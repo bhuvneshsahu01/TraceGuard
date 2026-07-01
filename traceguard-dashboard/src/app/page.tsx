@@ -84,6 +84,61 @@ export default function Home() {
     return null;
   };
 
+  const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
+  const [traceTree, setTraceTree] = useState<any[]>([]);
+
+  const fetchTraceTree = async (id: string) => {
+    setSelectedTraceId(id);
+    const res = await fetch(`/api/traces/${id}`);
+    const data = await res.json();
+    setTraceTree(data.spans || []);
+  };
+
+  const promoteToDataset = async () => {
+    if (!selectedTraceId || traceTree.length === 0) return;
+    const res = await fetch('/api/datasets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        trace_id: selectedTraceId,
+        name: `Curated Dataset ${new Date().toISOString().split('T')[0]}`,
+        spans: traceTree
+      })
+    });
+    if (res.ok) {
+      alert('Trace successfully promoted to Golden Dataset!');
+      setSelectedTraceId(null);
+    } else {
+      alert('Failed to promote trace.');
+    }
+  };
+
+  const renderTree = (nodes: any[], depth = 0) => {
+    return nodes.map(node => (
+      <div key={node.span_id} style={{ marginLeft: depth * 24 + 'px', marginTop: '8px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: '4px solid ' + (node.status_code === 'ERROR' ? 'var(--error)' : 'var(--primary)') }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <strong style={{ fontFamily: 'monospace' }}>{node.name}</strong>
+          <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{(node.end_time - node.start_time) / 1000000}ms</span>
+        </div>
+        {node.attributes && node.attributes['guardrail.direction'] && (
+          <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+            🛡️ TraceGuard Firewall ({node.attributes['guardrail.direction']})
+          </div>
+        )}
+        {node.attributes && node.attributes['llm.model'] && (
+          <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+            Tokens: {node.attributes['financial.input_tokens']} In / {node.attributes['financial.output_tokens']} Out (${node.attributes['financial.cost_usd']?.toFixed(6)})
+          </div>
+        )}
+        {node.children && node.children.length > 0 && (
+          <div style={{ marginTop: '8px' }}>
+            {renderTree(node.children, depth + 1)}
+          </div>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <header>
@@ -168,7 +223,8 @@ export default function Home() {
                 <tbody>
                   {[...traces].reverse().slice(0, 10).map((trace) => {
                     const isHallucination = trace.faithfulness !== null && trace.faithfulness < 0.8;
-                    const rowBg = isHallucination ? 'rgba(239, 68, 68, 0.1)' : 'transparent';
+                    const isBlocked = trace.status === 'ERROR' && trace.reason?.includes('TraceGuard Firewall');
+                    const rowBg = isHallucination ? 'rgba(239, 68, 68, 0.1)' : (isBlocked ? 'rgba(245, 158, 11, 0.1)' : 'transparent');
                     return (
                     <tr key={trace.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', backgroundColor: rowBg }}>
                       <td style={{ padding: '16px' }}>
@@ -189,11 +245,11 @@ export default function Home() {
                       </td>
                       <td style={{ padding: '16px' }}>{trace.latencyMs}ms</td>
                       <td style={{ padding: '16px' }}>
-                        {isHallucination ? (
-                          <button style={{ background: 'var(--error)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Review</button>
-                        ) : (
-                          <span style={{ color: 'rgba(255,255,255,0.4)' }}>-</span>
-                        )}
+                        <button 
+                          onClick={() => fetchTraceTree(trace.id)}
+                          style={{ background: isHallucination || isBlocked ? 'var(--error)' : 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>
+                          Review
+                        </button>
                       </td>
                     </tr>
                   )})}
@@ -202,6 +258,24 @@ export default function Home() {
             </div>
           </section>
         </>
+      )}
+
+      {/* Trace Tree Modal */}
+      {selectedTraceId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="glass" style={{ width: '80%', height: '80%', padding: '32px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0 }}>Trace Tree: <code style={{ fontSize: '1rem' }}>{selectedTraceId}</code></h2>
+              <div>
+                <button onClick={promoteToDataset} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '16px' }}>Promote to Dataset</button>
+                <button onClick={() => setSelectedTraceId(null)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Close</button>
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              {renderTree(traceTree)}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

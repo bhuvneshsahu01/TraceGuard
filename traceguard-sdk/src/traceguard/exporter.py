@@ -45,6 +45,14 @@ class SQLiteSpanExporter(SpanExporter):
                 )
             ''')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_spans_trace_id ON spans(trace_id)')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS datasets (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    created_at INTEGER NOT NULL,
+                    spans TEXT NOT NULL
+                )
+            ''')
             conn.commit()
 
     def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:

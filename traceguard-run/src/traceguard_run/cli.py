@@ -26,15 +26,40 @@ def evaluate(
     with console.status("[bold green]Loading datasets...[/bold green]"):
         import json
         import os
-        
-        if not os.path.exists(dataset) or not os.path.exists(baseline):
-            console.print("[bold red]Dataset or baseline file missing![/bold red]")
-            raise typer.Exit(1)
-            
-        with open(baseline, "r") as f:
-            baseline_data = [json.loads(line) for line in f if line.strip()]
-        with open(dataset, "r") as f:
-            current_data = [json.loads(line) for line in f if line.strip()]
+        import sqlite3
+
+        def load_data(source: str):
+            if source.startswith("db:"):
+                # Load from datasets table
+                name = source[3:]
+                try:
+                    conn = sqlite3.connect(".traceguard.db")
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT spans FROM datasets WHERE name = ?", (name,))
+                    row = cursor.fetchone()
+                    conn.close()
+                    if row:
+                        spans = json.loads(row[0])
+                        # Calculate metrics
+                        total_cost = sum([s.get("attributes", {}).get("financial.cost_usd", 0.0) for s in spans if s.get("attributes")])
+                        faithfulness = [s.get("eval_faithfulness") for s in spans if s.get("eval_faithfulness") is not None]
+                        avg_faithfulness = sum(faithfulness) / len(faithfulness) if faithfulness else 1.0
+                        return [{"trace_id": "db_dataset", "spans_count": len(spans), "cost_usd": total_cost, "eval_faithfulness": avg_faithfulness, "reason": ""}]
+                    else:
+                        console.print(f"[bold red]Dataset {name} not found in DB![/bold red]")
+                        raise typer.Exit(1)
+                except Exception as e:
+                    console.print(f"[bold red]Error reading from DB: {e}[/bold red]")
+                    raise typer.Exit(1)
+            else:
+                if not os.path.exists(source):
+                    console.print(f"[bold red]File missing: {source}[/bold red]")
+                    raise typer.Exit(1)
+                with open(source, "r") as f:
+                    return [json.loads(line) for line in f if line.strip()]
+
+        baseline_data = load_data(baseline)
+        current_data = load_data(dataset)
             
     console.print(f"[green][OK] Evaluated against {dataset}[/green]")
     
