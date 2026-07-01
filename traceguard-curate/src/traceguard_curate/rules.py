@@ -15,7 +15,8 @@ class ErrorRule(BaseRule):
     def evaluate(self, trace: TraceData) -> AnomalyResult:
         for span in trace.spans:
             if span.status_code == 'ERROR':
-                return AnomalyResult(is_anomalous=True, reason=f"Span '{span.name}' threw an error.")
+                # Attempt to extract Limit Cycle or other specific errors if they were logged as attributes
+                return AnomalyResult(is_anomalous=True, reason=f"Span '{span.name}' threw an error: Limit Cycle detected." if "Limit Cycle" in str(span.attributes.get("output.result", "")) or "Limit Cycle" in str(span.attributes.get("exception.message", "")) else f"Span '{span.name}' threw an error.")
         return AnomalyResult(is_anomalous=False)
 
 class LatencyRule(BaseRule):

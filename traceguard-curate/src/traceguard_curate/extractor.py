@@ -13,6 +13,9 @@ class SpanData(BaseModel):
     status_code: str
     attributes: Dict[str, Any]
     events: List[Dict[str, Any]]
+    eval_faithfulness: Optional[float] = None
+    eval_relevance: Optional[float] = None
+    eval_rationale: Optional[str] = None
 
 class TraceData(BaseModel):
     trace_id: str
@@ -62,6 +65,7 @@ class TraceExtractor:
                 except json.JSONDecodeError:
                     pass
 
+            keys = row.keys()
             span = SpanData(
                 span_id=row['span_id'],
                 trace_id=trace_id,
@@ -71,7 +75,10 @@ class TraceExtractor:
                 end_time=row['end_time'],
                 status_code=row['status_code'],
                 attributes=attributes,
-                events=events
+                events=events,
+                eval_faithfulness=row['eval_faithfulness'] if 'eval_faithfulness' in keys else None,
+                eval_relevance=row['eval_relevance'] if 'eval_relevance' in keys else None,
+                eval_rationale=row['eval_rationale'] if 'eval_rationale' in keys else None,
             )
             
             if trace_id not in spans_by_trace:
