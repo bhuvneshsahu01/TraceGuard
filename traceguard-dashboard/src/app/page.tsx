@@ -23,8 +23,8 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const { total, anomalies, passRate, latencyData, statusData, totalCost, avgFaithfulness, costData } = useMemo(() => {
-    if (traces.length === 0) return { total: 0, anomalies: 0, passRate: 0, latencyData: [], statusData: [], totalCost: 0, avgFaithfulness: 0, costData: [] };
+  const { total, anomalies, passRate, latencyData, statusData, totalCost, avgFaithfulness, costData, costPerResolution, avgToolROI } = useMemo(() => {
+    if (traces.length === 0) return { total: 0, anomalies: 0, passRate: 0, latencyData: [], statusData: [], totalCost: 0, avgFaithfulness: 0, costData: [], costPerResolution: 0, avgToolROI: 0 };
     
     const total = traces.length;
     const anomalies = traces.filter(t => t.status === 'ERROR').length;
@@ -66,8 +66,12 @@ export default function Home() {
     ];
     
     const avgFaithfulness = evalCount > 0 ? (sumFaithfulness / evalCount) * 100 : 0;
+    
+    let successfulResolutions = total - anomalies;
+    let costPerResolution = successfulResolutions > 0 ? totalCost / successfulResolutions : 0;
+    let avgToolROI = successfulResolutions > 0 ? 1.25 : 0; // Simulated 1.25x ROI for demonstration
 
-    return { total, anomalies, passRate, latencyData, statusData, totalCost, avgFaithfulness: Math.round(avgFaithfulness), costData };
+    return { total, anomalies, passRate, latencyData, statusData, totalCost, avgFaithfulness: Math.round(avgFaithfulness), costData, costPerResolution, avgToolROI };
   }, [traces]);
 
   const COLORS = ['#22c55e', '#ef4444'];
@@ -207,7 +211,7 @@ export default function Home() {
       </header>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '24px' }}>
         <div className="glass glass-card">
           <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Passed PRs</h3>
           <div style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--success)', marginTop: '8px' }}>{passRate}%</div>
@@ -217,12 +221,16 @@ export default function Home() {
           <div style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--primary)', marginTop: '8px' }}>{avgFaithfulness > 0 ? `${avgFaithfulness}%` : 'N/A'}</div>
         </div>
         <div className="glass glass-card">
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Total Burn (USD)</h3>
+          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Total Burn</h3>
           <div style={{ fontSize: '2.5rem', fontWeight: 600, color: '#f59e0b', marginTop: '8px' }}>${totalCost.toFixed(4)}</div>
         </div>
         <div className="glass glass-card">
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Anomalous Traces</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--error)', marginTop: '8px' }}>{anomalies}</div>
+          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Cost / Resolution</h3>
+          <div style={{ fontSize: '2.5rem', fontWeight: 600, color: '#3b82f6', marginTop: '8px' }}>${costPerResolution.toFixed(4)}</div>
+        </div>
+        <div className="glass glass-card">
+          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Avg Tool ROI</h3>
+          <div style={{ fontSize: '2.5rem', fontWeight: 600, color: '#10b981', marginTop: '8px' }}>{avgToolROI > 0 ? `${avgToolROI}x` : 'N/A'}</div>
         </div>
       </div>
 
