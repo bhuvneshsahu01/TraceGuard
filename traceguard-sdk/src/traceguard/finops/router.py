@@ -14,6 +14,41 @@ class SemanticCacheLayer:
         # Stub logic
         pass
 
+def cosine_similarity_stub(vec1: list[float], vec2: list[float]) -> float:
+    return sum(a * b for a, b in zip(vec1, vec2))
+
+class SemanticRouter:
+    """
+    Machine-learning-driven Semantic Router layer. Embeds incoming queries and 
+    computes cosine similarity against known 'prototypes' or difficulty clusters 
+    to dynamically select the optimal model.
+    """
+    def __init__(self):
+        # Stubs for prototype embeddings
+        self.prototypes = {
+            "simple_query": [0.1, 0.2, 0.3], # e.g. "What is the capital of France?"
+            "complex_coding": [0.8, 0.9, 0.9] # e.g. "Write a recursive descent parser"
+        }
+        
+    def route_query(self, query_embedding: list[float]) -> str:
+        """Routes query based on semantic similarity to prototypes."""
+        best_match = None
+        highest_sim = -1.0
+        
+        for prototype, emb in self.prototypes.items():
+            sim = cosine_similarity_stub(query_embedding, emb)
+            if sim > highest_sim:
+                highest_sim = sim
+                best_match = prototype
+                
+        # If the cosine similarity is indeterminate, use the fallback prediction layer
+        if highest_sim < 0.5:
+            return "fallback"
+            
+        if best_match == "complex_coding":
+            return "gpt-4o"
+        return "llama-3.1-8b-instant"
+
 class AgentAsARouter:
     """Dynamic cost-quality routing using Context-Action-Feedback loop."""
     
@@ -21,18 +56,26 @@ class AgentAsARouter:
         self.success_history = {}
         self.monthly_budget_usd = monthly_budget_usd
         self.current_spend_usd = 0.0
+        self.semantic_router = SemanticRouter()
         
     def log_spend(self, amount: float):
         self.current_spend_usd += amount
         
-    def autonomous_budget_downshift(self, default_model: str = "gpt-4o", fallback_model: str = "llama-3.1-8b-instant", hallucination_loop_detected: bool = False) -> str:
+    def autonomous_budget_downshift(self, query_embedding: list[float], hallucination_loop_detected: bool = False) -> str:
         """
-        Dynamically downshifts execution to a highly efficient model if budget breaches 80% 
-        or a hallucination loop is detected.
+        Dynamically downshifts execution.
+        1. Checks budget and hallucination loops.
+        2. Applies Semantic Prototype Routing.
+        3. Fallback to cost predictors if indeterminate.
         """
         budget_used_pct = self.current_spend_usd / self.monthly_budget_usd
         
         if budget_used_pct > 0.80 or hallucination_loop_detected:
-            return fallback_model
+            return "llama-3.1-8b-instant"
             
-        return default_model
+        semantic_choice = self.semantic_router.route_query(query_embedding)
+        if semantic_choice == "fallback":
+            # Fallback to cost/latency predictor (heuristic stub)
+            return "gpt-3.5-turbo" # Cheaper fallback
+            
+        return semantic_choice
