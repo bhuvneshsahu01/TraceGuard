@@ -31,3 +31,5 @@ Thumbs.db
 # Local Markdown Drafts
 implementation_plan*.md
 task*.md
+artifacts/
+test_traceguard/
