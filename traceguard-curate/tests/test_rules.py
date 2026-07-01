@@ -39,4 +39,5 @@ def test_anomaly_engine():
     
     result = engine.check_trace(trace)
     assert result.is_anomalous
+    assert result.reason is not None
     assert "error" in result.reason
