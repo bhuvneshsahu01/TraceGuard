@@ -61,6 +61,7 @@ def generate_ephemeral_credential() -> str:
 def tool_firewall(
     sanitize_paths: list[str] = None, 
     redact_args: list[str] = None,
+    allowed_urls: list[str] = None,
     enforce_ephemeral_auth: bool = False
 ) -> Callable[[F], F]:
     """
@@ -89,6 +90,16 @@ def tool_firewall(
                     mut_ctx.sanitize_path(p)
                 for r in redact_args:
                     mut_ctx.redact_credentials(r)
+                    
+                # Privilege Sandboxing: Enforce URL Allowlists
+                if allowed_urls is not None:
+                    url_val = kwargs.get('url') or kwargs.get('endpoint')
+                    if url_val and isinstance(url_val, str):
+                        if not any(allowed in url_val for allowed in allowed_urls):
+                            msg = f"Privilege Sandbox Blocked: Access to un-allowlisted URL '{url_val}'"
+                            span.set_status(Status(StatusCode.ERROR, msg))
+                            raise TraceGuardFirewallBlock(msg)
+
                     
                 if mut_ctx.mutated:
                     span.set_attribute("firewall.pre_hook.mutated", True)
@@ -130,6 +141,15 @@ def tool_firewall(
                         mut_ctx.sanitize_path(p)
                     for r in redact_args:
                         mut_ctx.redact_credentials(r)
+                        
+                    # Privilege Sandboxing: Enforce URL Allowlists
+                    if allowed_urls is not None:
+                        url_val = kwargs.get('url') or kwargs.get('endpoint')
+                        if url_val and isinstance(url_val, str):
+                            if not any(allowed in url_val for allowed in allowed_urls):
+                                msg = f"Privilege Sandbox Blocked: Access to un-allowlisted URL '{url_val}'"
+                                span.set_status(Status(StatusCode.ERROR, msg))
+                                raise TraceGuardFirewallBlock(msg)
                         
                     if mut_ctx.mutated:
                         span.set_attribute("firewall.pre_hook.mutated", True)
