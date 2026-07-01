@@ -1,20 +1,35 @@
 <div align="center">
-  <h1>🛡️ TraceGuard</h1>
-  <p><strong>The "pytest for AI": Enterprise-grade AI Agent Continuous Integration, Observability, and Evaluation.</strong></p>
+  <h1>🛡️ TraceGuard V2</h1>
+  <p><strong>Next-Gen Autonomous Observability & Security Platform for AI Agents</strong></p>
 </div>
 
 ---
 
-> 85%+ of AI agent projects fail in production because developers test probabilistic systems with deterministic tools. TraceGuard fixes this by bringing rigorous mathematical evaluation to the AI agent lifecycle.
+> 85%+ of AI agent projects fail in production because developers test probabilistic systems with deterministic tools. TraceGuard fixes this by bringing rigorous mathematical evaluation, reinforcement learning, and autonomous security to the AI agent lifecycle.
 
 TraceGuard unifies the entire AI evaluation flywheel:
-**Trace → Failure Detection → Dataset Curation → Statistical Eval → CI/CD Gating.**
+**Trace → Autonomous Security → Statistical Eval → RL Swarm Training → FinOps Routing.**
 
-## 🧠 The Moat: Mathematical Rigor
-Unlike basic LLM dashboards, TraceGuard's evaluation engine is built on pure statistical mathematics to guarantee deployment safety:
-- **Bootstrap Confidence Intervals:** We don't just output "Pass/Fail". We calculate the minimum detectable difference and output statistical confidence (e.g., *"95% confident the new PR degrades faithfulness"*).
-- **Statistical Drift:** We detect agent degradation using Population Stability Index (PSI) and Kolmogorov-Smirnov (KS) tests.
-- **Limit Cycle Detection:** We apply dynamical systems theory to track agent loops and catch infinite looping behavior before it burns your token budget.
+## 🧠 The Moat: TraceGuard V2 Features
+
+### 1. Autonomous Multimodal Security
+- **OCR & CLIP Stego Firewalls:** Blocks advanced Cross-Modal Prompt Injections (CrossMPI) and text-in-image steganography before they hit your agent.
+- **Privilege Sandboxing & Zero Trust:** Blocks data exfiltration at the API layer by enforcing strict URL allowlists during agent tool execution.
+- **RL-Driven Red Teaming:** An autonomous CLI agent that attacks your system nightly, utilizing a persistent, lifelong "Attack Library" to continually mutate and learn new exploitation vectors.
+
+### 2. Statistical Evals & Calibration
+- **Logprob Thresholding:** If the LLM judge isn't confident in its internal log probabilities, TraceGuard drops the sample.
+- **Kolmogorov-Smirnov (KS) Tests:** Guarantees judgment distribution stability during multi-agent consensus debates.
+- **Statistical Drift Engine:** Uses Bootstrap Confidence Intervals (CI) and Population Stability Index (PSI) to mathematically gate PRs that degrade performance.
+
+### 3. Swarm Observability & RL Credit
+- **Graph Aggregation Engine:** TraceGuard leverages OpenTelemetry (`gen_ai.agent.swarm.id`) to dynamically reconstruct highly complex, non-linear DAGs across distributed environments.
+- **Psychological Swarm Monitors:** Explicit heuristic detection for Sycophancy ("agreement without verification") and Context Contamination (semantic drift across shared memory).
+- **RL Credit Assignment:** Backpropagates temporal "rewards" through a Swarm DAG, laying the absolute foundation for training Multi-Agent systems via Reinforcement Learning.
+
+### 4. Machine-Learning FinOps
+- **Semantic Prototype Routing:** Dynamically computes cosine similarity against known query prototypes to instantly route tasks to the optimal LLM (e.g., `gpt-4o` vs `llama-3.1-8b`), explicitly falling back to latency predictors when ambiguous.
+- **Live A/B Tool Testing & EMA Tracking:** Dynamically splits traffic between tool variants, measures the Exponential Moving Average (EMA) of their ROI, and autonomously allocates traffic to the most profitable tools.
 
 ---
 
@@ -22,24 +37,21 @@ Unlike basic LLM dashboards, TraceGuard's evaluation engine is built on pure sta
 
 TraceGuard is a monorepo consisting of 5 seamlessly integrated modules:
 
-### 1. `traceguard-sdk` (Observability)
-A lightweight OpenTelemetry-compliant Python SDK. Wrap your agent's tools with `@traceguard.observe` to automatically capture inputs, outputs, errors, and latencies into a highly-performant SQLite database (`.traceguard.db`).
-
-### 2. `traceguard-curate` (Dataset Curation)
-A pipeline that scans production traces, flags anomalies (using configurable rules like `ErrorRule` and `LatencyRule`), and extracts the exact failed states into version-controlled JSON Lines (`test_cases.jsonl`) datasets.
-
-### 3. `traceguard-run` (Evaluation Engine)
-The core mathematical engine. A beautiful Typer/Rich CLI that evaluates new code against curated datasets. Computes Bootstrap CIs and runs KS Drift tests. Intended to be run in CI/CD pipelines to block mathematically unsafe pull requests.
-
-### 4. `traceguard-fuzz` (Adversarial Testing)
-A robustness testing layer. Wrap tools with `@fuzz_tool(injection_rate=0.2)` to intercept function calls at runtime and intelligently inject malicious payloads (SQL injection, massive strings, null bytes) based on Python type-hints.
-
-### 5. `traceguard-dashboard` (Enterprise UI)
-A premium Next.js 15+ App Router web application featuring a stunning dark-mode Glassmorphism design. Connects directly to the OpenTelemetry SQLite database to visualize trace latencies, statistical drift, and pass rates in real-time.
+1. **`traceguard-sdk`:** A lightweight OpenTelemetry-compliant Python SDK containing all Firewall, FinOps, and Telemetry Hooks.
+2. **`traceguard-curate`:** Dataset Curation pipeline that extracts failed states into version-controlled golden datasets.
+3. **`traceguard-run`:** The core evaluation and Red Teaming engine (CLI).
+4. **`traceguard-fuzz`:** Adversarial robustness testing layer.
+5. **`traceguard-dashboard`:** An Enterprise Next.js 15+ App Router web application directly connected to the local OTel SQLite DB. Visualizes parallel execution waves, memory locks, and hallucination score badges instantly on the trace graph.
 
 ---
 
 ## 🚀 Getting Started
+
+### Generate Traces
+Run the End-to-End V2 Showcase script to generate mock swarm traces with parallel waves, sycophancy loops, and Vector DB retrieval spans:
+```bash
+python test_traceguard/e2e_v2_showcase.py
+```
 
 ### Local Dashboard
 To view your agent's telemetry locally:
@@ -49,9 +61,6 @@ npm install
 npm run dev
 ```
 Navigate to `http://localhost:3000`.
-
-### CI/CD Integration
-TraceGuard includes a pre-configured GitHub Actions workflow (`.github/workflows/evaluate.yml`). It automatically runs `traceguard-run` on every pull request targeting `main`, blocking the merge if statistical degradation is detected.
 
 ---
 
