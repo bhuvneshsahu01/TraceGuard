@@ -114,29 +114,89 @@ export default function Home() {
   };
 
   const renderTree = (nodes: any[], depth = 0) => {
-    return nodes.map(node => (
-      <div key={node.span_id} style={{ marginLeft: depth * 24 + 'px', marginTop: '8px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: '4px solid ' + (node.status_code === 'ERROR' ? 'var(--error)' : 'var(--primary)') }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <strong style={{ fontFamily: 'monospace' }}>{node.name}</strong>
+    return nodes.map(node => {
+      const isAgent = node.attributes?.['openinference.span.kind'] === 'AGENT';
+      const consensus = node.attributes?.['swarm.consensus_strength'];
+      const orchestratorState = node.attributes?.['swarm.orchestrator_state'];
+      const mediationPre = node.attributes?.['swarm.mediation_pre_state'];
+      const mediationPost = node.attributes?.['swarm.mediation_post_state'];
+
+      // Consensus heatmap color mapping
+      let heatmapColor = 'transparent';
+      if (consensus !== undefined) {
+        heatmapColor = consensus > 0.8 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'; // Red if high consensus sycophancy, green if healthy dissent
+      }
+
+      return (
+      <div key={node.span_id} style={{ 
+        marginLeft: depth * 24 + 'px', 
+        marginTop: '12px', 
+        padding: '16px', 
+        background: 'rgba(255,255,255,0.05)', 
+        borderRadius: '8px', 
+        borderLeft: '4px solid ' + (node.status_code === 'ERROR' ? 'var(--error)' : 'var(--primary)'),
+        position: 'relative'
+      }}>
+        {/* Consensus Heatmap Overlay */}
+        {consensus !== undefined && (
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: heatmapColor, pointerEvents: 'none', borderRadius: '8px' }} />
+        )}
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <strong style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>
+            {isAgent ? '🤖 ' : ''}{node.name}
+          </strong>
           <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{(node.end_time - node.start_time) / 1000000}ms</span>
         </div>
-        {node.attributes && node.attributes['guardrail.direction'] && (
-          <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
-            🛡️ TraceGuard Firewall ({node.attributes['guardrail.direction']})
-          </div>
-        )}
-        {node.attributes && node.attributes['llm.model'] && (
-          <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-            Tokens: {node.attributes['financial.input_tokens']} In / {node.attributes['financial.output_tokens']} Out (${node.attributes['financial.cost_usd']?.toFixed(6)})
-          </div>
-        )}
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Orchestrator State Transitions */}
+          {orchestratorState && (
+             <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#60a5fa', background: 'rgba(96, 165, 250, 0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', marginRight: '8px' }}>
+               🔄 Orchestrator State: {orchestratorState}
+             </div>
+          )}
+
+          {node.attributes && node.attributes['guardrail.direction'] && (
+            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', marginRight: '8px' }}>
+              🛡️ TraceGuard Firewall ({node.attributes['guardrail.direction']})
+            </div>
+          )}
+
+          {consensus !== undefined && (
+            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: consensus > 0.8 ? '#ef4444' : '#22c55e', background: 'rgba(255, 255, 255, 0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block' }}>
+              🌡️ Consensus Strength: {(consensus * 100).toFixed(0)}%
+            </div>
+          )}
+
+          {/* Mediation Lanes */}
+          {(mediationPre || mediationPost) && (
+            <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '6px' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Mediation Lane: Pre-Exchange State</div>
+                <pre style={{ fontSize: '0.75rem', margin: 0, color: '#a78bfa', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>{mediationPre || 'null'}</pre>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Mediation Lane: Post-Exchange State</div>
+                <pre style={{ fontSize: '0.75rem', margin: 0, color: '#34d399', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>{mediationPost || 'null'}</pre>
+              </div>
+            </div>
+          )}
+
+          {node.attributes && node.attributes['llm.model'] && (
+            <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+              Tokens: {node.attributes['financial.input_tokens']} In / {node.attributes['financial.output_tokens']} Out (${node.attributes['financial.cost_usd']?.toFixed(6)})
+            </div>
+          )}
+        </div>
+
         {node.children && node.children.length > 0 && (
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: '12px', position: 'relative', zIndex: 1 }}>
             {renderTree(node.children, depth + 1)}
           </div>
         )}
       </div>
-    ));
+    )});
   };
 
   return (
