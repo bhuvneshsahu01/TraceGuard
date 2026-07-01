@@ -9,22 +9,29 @@ class SageEvaluator:
     def __init__(self, judge_model_callable: Callable[[str, str], float]):
         self.judge = judge_model_callable
         
-    def intra_pair_instability(self, prompt: str, ans_A: str, ans_B: str) -> bool:
+    def intra_pair_instability(self, prompt: str, ans_A: str, ans_B: str, num_samples: int = 5) -> bool:
         """
-        Measures local self-consistency and positional bias.
-        Swaps presentation order to check for preference reversals.
-        Returns True if the judge is unstable (reverses preference).
+        Measures local self-consistency and positional bias using Batched Pairwise 
+        self-consistency loops. Evaluates candidate pairs jointly over multiple perturbations.
+        Returns True if the judge is unstable.
         """
-        # Score A vs B
-        score_AB = self.judge(prompt, f"Answer A: {ans_A}\\nAnswer B: {ans_B}")
+        a_wins_ab = 0
+        a_wins_ba = 0
         
-        # Score B vs A
-        score_BA = self.judge(prompt, f"Answer A: {ans_B}\\nAnswer B: {ans_A}")
+        for _ in range(num_samples):
+            # Score A vs B (A is ans_A)
+            if self.judge(prompt, f"Answer A: {ans_A}\\nAnswer B: {ans_B}") > 0.5:
+                a_wins_ab += 1
+                
+            # Score B vs A (B is ans_A, so score < 0.5 favors ans_A)
+            if self.judge(prompt, f"Answer A: {ans_B}\\nAnswer B: {ans_A}") < 0.5:
+                a_wins_ba += 1
+                
+        prefers_A_initially = (a_wins_ab / num_samples) > 0.5
+        prefers_A_when_swapped = (a_wins_ba / num_samples) > 0.5
         
-        prefers_A_initially = score_AB > 0.5
-        prefers_B_when_swapped = score_BA < 0.5
-        
-        return prefers_A_initially == (not prefers_B_when_swapped)
+        # Unstable if preference flips just because of presentation order
+        return prefers_A_initially != prefers_A_when_swapped
 
     def weak_total_order_violation(self, prompt: str, ans_A: str, ans_B: str, ans_C: str) -> bool:
         """
