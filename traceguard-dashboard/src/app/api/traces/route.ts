@@ -27,7 +27,7 @@ export async function GET() {
         (SELECT COUNT(*) FROM spans WHERE trace_id = traces.trace_id AND status_code = 'ERROR') as error_count
       FROM traces 
       ORDER BY start_time DESC 
-      LIMIT 10
+      LIMIT 50
     `).all();
     
     db.close();
