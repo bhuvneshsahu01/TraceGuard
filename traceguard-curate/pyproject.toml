@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "traceguard-curate"
+version = "0.1.0"
+description = "TraceGuard Dataset Curation Pipeline"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Bhuvnesh", email = "bhuvnesh@example.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0"
+]
+
+[project.scripts]
+traceguard-curate = "traceguard_curate.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/traceguard_curate"]
+
+[tool.mypy]
+strict = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
