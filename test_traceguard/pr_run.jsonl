@@ -1,0 +1,3 @@
+{"trace_id": "0b60248b7a9f96d9d0e4ae57ac8fe1d1", "spans_count": 4, "reason": "Span 'run_agent' threw an error.Span 'call_llm' threw an error.", "cost_usd": 2.5980000000000005e-05, "eval_faithfulness": null, "eval_relevance": null}
+{"trace_id": "b4bb7fd6d8e3fa2187404d6ff5c68b70", "spans_count": 6, "reason": "", "cost_usd": 5.369e-05, "eval_faithfulness": 1.0, "eval_relevance": 1.0}
+{"trace_id": "79336fc4e0f2b970691b5dc4ba52ec70", "spans_count": 11, "reason": "", "cost_usd": 0.00014715000000000003, "eval_faithfulness": 1.0, "eval_relevance": 1.0}

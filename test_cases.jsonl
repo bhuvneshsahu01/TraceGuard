@@ -1,0 +1,2 @@
+{"trace_id": "62c8a617086ecdaed322ec98af54476c", "reason": "Span 'fetch_user_data' threw an error.", "spans_count": 1}
+{"trace_id": "f9da7a3a06fc12971346ade90b1659d0", "reason": "Span 'generate_response' threw an error.", "spans_count": 1}
