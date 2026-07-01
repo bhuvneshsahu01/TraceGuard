@@ -120,6 +120,49 @@ class SQLiteSpanExporter(SpanExporter):
             logger.error(f"Failed to export spans to SQLite: {e}")
             return SpanExportResult.FAILURE
 
+    def reconstruct_swarm_dag(self, swarm_id: str) -> list[dict]:
+        """
+        Graph Aggregation Engine (Phase 21).
+        Dynamically reconstructs a non-linear DAG out of standard OTel spans
+        using the 'gen_ai.agent.swarm.id' attribute, enabling cross-vendor portability
+        even if standard parent-child trace links are broken across distributed boundaries.
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            # Fetch all spans containing the swarm_id in attributes
+            cursor.execute('''
+                SELECT span_id, parent_span_id, name, attributes 
+                FROM spans 
+                WHERE attributes LIKE ?
+            ''', (f'%"{swarm_id}"%',))
+            
+            rows = cursor.fetchall()
+            
+        # Reconstruct graph locally
+        nodes = {}
+        for row in rows:
+            attrs = json.loads(row[3]) if row[3] else {}
+            # Verify exact attribute match to avoid SQL LIKE false positives
+            if attrs.get("gen_ai.agent.swarm.id") == swarm_id:
+                nodes[row[0]] = {
+                    "id": row[0],
+                    "parent_id": row[1],
+                    "name": row[2],
+                    "attributes": attrs,
+                    "children": []
+                }
+                
+        # Build tree structure
+        roots = []
+        for span_id, node in nodes.items():
+            parent = node["parent_id"]
+            if parent and parent in nodes:
+                nodes[parent]["children"].append(node)
+            else:
+                roots.append(node)
+                
+        return roots
+
     def shutdown(self) -> None:
         """Called when the TracerProvider shuts down."""
         pass
