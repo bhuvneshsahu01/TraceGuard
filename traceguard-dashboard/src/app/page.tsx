@@ -124,6 +124,9 @@ export default function Home() {
       const orchestratorState = node.attributes?.['swarm.orchestrator_state'];
       const mediationPre = node.attributes?.['swarm.mediation_pre_state'];
       const mediationPost = node.attributes?.['swarm.mediation_post_state'];
+      const parallelWaveId = node.attributes?.['swarm.parallel_wave_id'];
+      const memoryLock = node.attributes?.['swarm.memory_lock'];
+      const hallucinationScore = node.attributes?.['eval.hallucination_score'];
 
       // Consensus heatmap color mapping
       let heatmapColor = 'transparent';
@@ -141,6 +144,13 @@ export default function Home() {
         borderLeft: '4px solid ' + (node.status_code === 'ERROR' ? 'var(--error)' : 'var(--primary)'),
         position: 'relative'
       }}>
+        {/* Hallucination Badge Overlay */}
+        {hallucinationScore !== undefined && (
+          <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.8rem', zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.8)' }} title={`Hallucination Score: ${hallucinationScore}`}>
+            {Math.round(hallucinationScore * 100)}
+          </div>
+        )}
+        
         {/* Consensus Heatmap Overlay */}
         {consensus !== undefined && (
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: heatmapColor, pointerEvents: 'none', borderRadius: '8px' }} />
@@ -159,6 +169,18 @@ export default function Home() {
              <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#60a5fa', background: 'rgba(96, 165, 250, 0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', marginRight: '8px' }}>
                🔄 Orchestrator State: {orchestratorState}
              </div>
+          )}
+          
+          {parallelWaveId && (
+            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#c084fc', background: 'rgba(192, 132, 252, 0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', marginRight: '8px', border: '1px dashed rgba(192,132,252,0.5)' }}>
+              🌊 Parallel Wave: {parallelWaveId}
+            </div>
+          )}
+
+          {memoryLock && (
+            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: memoryLock === 'WRITE' ? '#ef4444' : '#60a5fa', background: memoryLock === 'WRITE' ? 'rgba(239,68,68,0.1)' : 'rgba(96,165,250,0.1)', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', marginRight: '8px' }}>
+              🔒 Memory: {memoryLock} Lock
+            </div>
           )}
 
           {node.attributes && node.attributes['guardrail.direction'] && (

@@ -1,24 +1,37 @@
-from typing import Dict, Any
+from typing import List, Dict, Any
 
-class ContextContaminationMonitor:
+def string_similarity_stub(str1: str, str2: str) -> float:
+    """Stub for cosine similarity between two string embeddings."""
+    return 0.9 if str1 == str2 else 0.5
+
+class ContaminationMonitor:
     """
-    Analyzes vector similarity of inputs across isolated agent pathways to detect semantic bleed.
+    Heuristic monitor for 'semantic drift across spans'.
+    Detects if the semantic intent of the memory state wildly diverges
+    as it is passed across multiple parallel agents.
     """
-    def __init__(self, threshold: float = 0.90):
-        self.similarity_threshold = threshold
-        self.agent_histories: Dict[str, list] = {}
+    def __init__(self, drift_threshold: float = 0.4):
+        self.drift_threshold = drift_threshold
+        self.state_history: List[Dict[str, Any]] = []
         
-    def register_input(self, agent_namespace: str, vector: list[float]):
-        if agent_namespace not in self.agent_histories:
-            self.agent_histories[agent_namespace] = []
-        self.agent_histories[agent_namespace].append(vector)
+    def log_state_update(self, agent_id: str, new_memory_state: str):
+        self.state_history.append({
+            "agent_id": agent_id,
+            "state": new_memory_state
+        })
         
-    def check_contamination(self, source_agent: str, target_agent: str) -> bool:
+    def detect_contamination(self) -> bool:
         """
-        Detects if semantic context has bled from source to target across strictly bounded namespaces.
-        (Stub logic for POC)
+        Returns True if semantic drift exceeds the threshold, implying 
+        context contamination or hallucination propagation.
         """
-        if source_agent in self.agent_histories and target_agent in self.agent_histories:
-            # In a real implementation, we calculate cosine similarity here
-            return True # Simulated contamination
-        return False
+        if len(self.state_history) < 2:
+            return False
+            
+        original_state = self.state_history[0]["state"]
+        current_state = self.state_history[-1]["state"]
+        
+        similarity = string_similarity_stub(original_state, current_state)
+        
+        # If similarity drops too low, the core intent has been lost/contaminated
+        return similarity < self.drift_threshold
