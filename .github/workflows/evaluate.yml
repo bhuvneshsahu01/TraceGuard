@@ -1,0 +1,47 @@
+name: TraceGuard Evaluation
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install TraceGuard Packages
+        run: |
+          pip install ./traceguard-sdk
+          pip install ./traceguard-run
+          pip install ./traceguard-fuzz
+          pip install ./traceguard-curate
+
+      # In a real environment, you'd run your agent's test suite here which generates .traceguard.db
+      # - name: Run Agent Integration Tests
+      #   run: pytest my_agent_tests/
+
+      - name: Extract Curated Dataset
+        run: |
+          # If .traceguard.db exists, extract anomalous test cases
+          if [ -f .traceguard.db ]; then
+            traceguard-curate extract --db .traceguard.db --output test_cases.jsonl
+          fi
+
+      - name: TraceGuard Mathematical Evaluation
+        run: |
+          # Run the evaluation engine against the baseline (e.g., origin/main traces if fetched)
+          # We use a dummy file here just to show the pipeline structure
+          if [ -f test_cases.jsonl ]; then
+            python -m traceguard_run.cli --dataset test_cases.jsonl --baseline main
+          else
+            echo "No test cases found. Passing evaluation."
+          fi
