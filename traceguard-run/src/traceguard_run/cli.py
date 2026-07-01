@@ -160,5 +160,18 @@ def evaluate(
         console.print("[bold green][PASS] Evaluation Passed! PR is safe to merge.[/bold green]")
 
 
+@app.command()
+def redteam(
+    target: str = typer.Option(..., help="Target agent entrypoint for red teaming")
+):
+    """
+    Launches continuous, multi-turn adversarial dialogue against the target agent.
+    """
+    from .red_team import AutonomousRedTeam
+    rt = AutonomousRedTeam(target)
+    success = rt.execute()
+    if not success:
+        raise typer.Exit(1)
+
 if __name__ == "__main__":
     app()
