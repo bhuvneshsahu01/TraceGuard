@@ -1,7 +1,0 @@
-- `[/]` Implement OpenTelemetry & SQLite trace syncing
-  - `[ ]` Create `src/traceguard/exporter.py` with `SQLiteSpanExporter`
-  - `[ ]` Create `src/traceguard/config.py` with `configure_traceguard`
-  - `[ ]` Modify `src/traceguard/decorators.py` to trace both sync and async functions
-  - `[ ]` Ensure proper serialization of inputs/outputs for span attributes
-  - `[ ]` Write automated tests in `tests/`
-  - `[ ]` Verify execution behavior via mock script
