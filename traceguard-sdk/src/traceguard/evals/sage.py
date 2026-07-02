@@ -98,3 +98,33 @@ class MultiAgentConsensusPanel:
         p_value = ks_test_stub(scores[:half], scores[half:]) if len(scores) > 1 else 1.0
         
         return avg_score, avg_lp, p_value
+
+class IsotonicCalibrator:
+    """
+    GPT Phase 24: Logistic/Isotonic Calibration Model.
+    Maps raw LLM logprobs (or scores) to empirical correctness rates.
+    """
+    def __init__(self):
+        # Stores historical (raw_score, human_label) pairs for calibration
+        self.history: List[Tuple[float, float]] = []
+        
+    def fit(self, historical_data: List[Tuple[float, float]]):
+        """Fit the calibrator to historical data."""
+        self.history.extend(historical_data)
+        
+    def calibrate(self, raw_score: float, raw_logprob: float) -> float:
+        """
+        Translates an LLM's raw confidence/score into a calibrated probability.
+        E.g., if it reports 0.9 confidence but historically is correct 80% of the time 
+        at that threshold, it returns 0.8.
+        """
+        if not self.history:
+            return raw_score * (math.exp(raw_logprob) if raw_logprob < 0 else raw_logprob)
+            
+        # Stub: simple piecewise isotonic regression fallback
+        # In a real model, we'd use sklearn.isotonic.IsotonicRegression
+        nearby_samples = [label for score, label in self.history if abs(score - raw_score) < 0.1]
+        if not nearby_samples:
+            return raw_score
+            
+        return sum(nearby_samples) / len(nearby_samples)
