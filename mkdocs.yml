@@ -1,0 +1,14 @@
+site_name: TraceGuard Documentation
+site_description: Enterprise Generative AI Security & Observability
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+nav:
+  - Home: index.md
+  - Security Firewalls: security.md
+  - Evaluation & Calibration: evals.md
+  - FinOps Routing: finops.md
+  - OpenTelemetry & Swarms: telemetry.md

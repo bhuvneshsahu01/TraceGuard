@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: traceguard_backend
+    volumes:
+      - traceguard_data:/app/data
+      - ./.env:/app/.env
+    environment:
+      - TRACEGUARD_DB_PATH=/app/data/traceguard.db
+    # To run tests or showcase scripts, you can execute commands inside this container.
+    command: tail -f /dev/null
+
+  dashboard:
+    build:
+      context: ./traceguard-dashboard
+      dockerfile: Dockerfile
+    container_name: traceguard_dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - traceguard_data:/app/data
+    environment:
+      - TRACEGUARD_DB_PATH=/app/data/traceguard.db
+    depends_on:
+      - backend
+
+  # Phase 31: Jaeger for Enterprise OTLP Export
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: traceguard_jaeger
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+volumes:
+  traceguard_data:

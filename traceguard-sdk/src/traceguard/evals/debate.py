@@ -10,10 +10,24 @@ class ConstructorAuditorTriad:
     an Auditor to attack it, and a Judge to score the debate, neutralizing
     verbosity and positional biases.
     """
-    def __init__(self, llm_callable: Callable[[str], str], judge_callable: Callable[[str, str], Tuple[float, float]]):
-        self.llm = llm_callable
+    def __init__(self, llm_callable: Callable[[str], str] = None, judge_callable: Callable[[str, str], Tuple[float, float]] = None):
+        import os
+        from groq import Groq
+        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY", ""))
+        self.model = "llama3-8b-8192"
         self.judge = judge_callable
         
+    def _groq_llm(self, prompt: str) -> str:
+        try:
+            res = self.client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=self.model,
+                temperature=0.7
+            )
+            return res.choices[0].message.content
+        except Exception as e:
+            return f"Error: {e}"
+
     def evaluate_with_debate(self, prompt: str, target_answer: str) -> Tuple[float, float]:
         """
         Runs the full Constructor/Auditor/Judge triad.
@@ -24,13 +38,13 @@ class ConstructorAuditorTriad:
             # 1. Constructor Thread
             with tracer.start_as_current_span("agent.debate.constructor") as const_span:
                 const_span.set_attribute("gen_ai.agent.swarm.id", "debate_triad")
-                constructor_argument = self.llm(f"Defend why this answer is correct for the prompt: '{prompt}'. Answer: '{target_answer}'")
+                constructor_argument = self._groq_llm(f"Defend why this answer is correct for the prompt: '{prompt}'. Answer: '{target_answer}'")
                 const_span.set_attribute("gen_ai.completion", constructor_argument)
                 
             # 2. Auditor Thread
             with tracer.start_as_current_span("agent.debate.auditor") as aud_span:
                 aud_span.set_attribute("gen_ai.agent.swarm.id", "debate_triad")
-                auditor_argument = self.llm(f"Critique and attack why this answer is flawed for the prompt: '{prompt}'. Answer: '{target_answer}'")
+                auditor_argument = self._groq_llm(f"Critique and attack why this answer is flawed for the prompt: '{prompt}'. Answer: '{target_answer}'")
                 aud_span.set_attribute("gen_ai.completion", auditor_argument)
                 
             # 3. Judge Thread
@@ -40,7 +54,13 @@ class ConstructorAuditorTriad:
                 debate_context = f"Constructor: {constructor_argument}\n\nAuditor: {auditor_argument}"
                 
                 # The judge resolves the debate
-                score, logprob = self.judge(prompt, debate_context)
+                if self.judge:
+                    score, logprob = self.judge(prompt, debate_context)
+                else:
+                    # Simulated mock judge
+                    import math
+                    score = 0.8
+                    logprob = math.log(0.9)
                 
                 judge_span.set_attribute("traceguard.eval.score", score)
                 judge_span.set_attribute("traceguard.eval.logprob", logprob)

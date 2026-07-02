@@ -33,3 +33,5 @@ implementation_plan*.md
 task*.md
 artifacts/
 test_traceguard/
+.vscode/
+for_me.md

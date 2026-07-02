@@ -166,3 +166,20 @@ class SQLiteSpanExporter(SpanExporter):
     def shutdown(self) -> None:
         """Called when the TracerProvider shuts down."""
         pass
+
+def get_enterprise_exporters() -> list[SpanExporter]:
+    """
+    Returns a list of all active exporters.
+    Always includes SQLiteSpanExporter.
+    If OTLP endpoint is set, adds OTLPSpanExporter (Phase 31).
+    """
+    import os
+    exporters = [SQLiteSpanExporter()]
+    
+    otlp_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if otlp_endpoint:
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+        logger.info(f"TraceGuard Enterprise OTLP Export enabled: {otlp_endpoint}")
+        exporters.append(OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True))
+        
+    return exporters

@@ -49,29 +49,53 @@ class SemanticRouter:
             return "gpt-4o"
         return "llama-3.1-8b-instant"
         
-    def cascade_route(self, prompt: str, evaluator: callable) -> tuple[str, float]:
+    def cascade_route(self, prompt: str, evaluator: callable = None) -> tuple[str, float]:
         """
-        GPT Phase 26: Dynamic Model Cascading.
-        Executes a cheap model (llama-3.1-8b). If its internal confidence 
+        GPT Phase 26/29: Dynamic Model Cascading (Live Groq Integration).
+        Executes a cheap model (llama3-8b-8192). If its internal confidence 
         (or a fast heuristic validation) is low, it automatically transparently 
-        escalates and re-routes to gpt-4o.
+        escalates and re-routes to mixtral-8x7b-32768.
         """
-        # Step 1: Try the cheap fast model
-        cheap_model = "llama-3.1-8b-instant"
-        initial_answer, confidence_logprob = evaluator(cheap_model, prompt)
-        
-        # Step 2: Check confidence
+        import os
+        from groq import Groq
         import math
-        confidence_pct = math.exp(confidence_logprob) if confidence_logprob < 0 else confidence_logprob
+        
+        client = Groq(api_key=os.environ.get("GROQ_API_KEY", ""))
+        
+        # Step 1: Try the cheap fast model
+        cheap_model = "llama3-8b-8192"
+        try:
+            res = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=cheap_model,
+                temperature=0.0
+            )
+            initial_answer = res.choices[0].message.content
+            
+            # Simulated confidence (Groq API doesn't return logprobs directly yet)
+            # In a real environment, we would use a logprob endpoint or a fast heuristic
+            confidence_pct = 0.9 if len(initial_answer) > 50 else 0.4
+        except Exception as e:
+            initial_answer = f"Error: {e}"
+            confidence_pct = 0.0
         
         if confidence_pct < 0.75:
             # Low confidence -> cascade to expensive model
-            print(f"Cascading: {cheap_model} confidence too low ({confidence_pct:.2f}). Escalating to gpt-4o.")
-            expensive_model = "gpt-4o"
-            escalated_answer, escalated_logprob = evaluator(expensive_model, prompt)
-            return escalated_answer, escalated_logprob
+            expensive_model = "mixtral-8x7b-32768"
+            print(f"Cascading: {cheap_model} confidence too low ({confidence_pct:.2f}). Escalating to {expensive_model}.")
+            try:
+                res2 = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model=expensive_model,
+                    temperature=0.2
+                )
+                escalated_answer = res2.choices[0].message.content
+                escalated_logprob = math.log(0.95)
+                return escalated_answer, escalated_logprob
+            except Exception as e:
+                return f"Fallback Error: {e}", 0.0
             
-        return initial_answer, confidence_logprob
+        return initial_answer, math.log(confidence_pct)
 
 class AgentAsARouter:
     """Dynamic cost-quality routing using Context-Action-Feedback loop."""

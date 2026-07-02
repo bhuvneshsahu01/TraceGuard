@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies needed for compiling certain python packages
+RUN apt-get update && apt-get install -y build-essential curl && rm -rf /var/lib/apt/lists/*
+
+# Copy the monorepo packages
+COPY traceguard-sdk ./traceguard-sdk
+COPY traceguard-run ./traceguard-run
+COPY traceguard-curate ./traceguard-curate
+COPY traceguard-fuzz ./traceguard-fuzz
+
+# Install the packages in editable/standard mode
+RUN pip install --no-cache-dir -e ./traceguard-sdk
+RUN pip install --no-cache-dir -e ./traceguard-run
+RUN pip install --no-cache-dir -e ./traceguard-curate
+RUN pip install --no-cache-dir -e ./traceguard-fuzz
+
+# Copy the showcase and tests
+COPY test_traceguard ./test_traceguard
+COPY tests ./tests
+
+# Environment variables
+ENV PYTHONPATH=/app
+ENV TRACEGUARD_DB_PATH=/app/data/traceguard.db
+
+# Default command: just keep the container alive for CLI execution, 
+# or run a specific server if one exists.
+CMD ["tail", "-f", "/dev/null"]
