@@ -51,29 +51,25 @@ class SemanticRouter:
         
     def cascade_route(self, prompt: str, evaluator: callable = None) -> tuple[str, float]:
         """
-        GPT Phase 26/29: Dynamic Model Cascading (Live Groq Integration).
-        Executes a cheap model (llama3-8b-8192). If its internal confidence 
-        (or a fast heuristic validation) is low, it automatically transparently 
-        escalates and re-routes to mixtral-8x7b-32768.
+        GPT Phase 34: Universal Model Cascading (LiteLLM Integration).
+        Executes a cheap model (e.g., groq/llama3-8b-8192). If low confidence, 
+        transparently escalates to a flagship model (e.g., groq/mixtral-8x7b-32768 or openai/gpt-4o).
         """
         import os
-        from groq import Groq
+        from litellm import completion
         import math
         
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY", ""))
-        
         # Step 1: Try the cheap fast model
-        cheap_model = "llama3-8b-8192"
+        cheap_model = "groq/llama3-8b-8192"
         try:
-            res = client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
+            res = completion(
                 model=cheap_model,
+                messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )
             initial_answer = res.choices[0].message.content
             
-            # Simulated confidence (Groq API doesn't return logprobs directly yet)
-            # In a real environment, we would use a logprob endpoint or a fast heuristic
+            # Simulated confidence 
             confidence_pct = 0.9 if len(initial_answer) > 50 else 0.4
         except Exception as e:
             initial_answer = f"Error: {e}"
@@ -81,12 +77,12 @@ class SemanticRouter:
         
         if confidence_pct < 0.75:
             # Low confidence -> cascade to expensive model
-            expensive_model = "mixtral-8x7b-32768"
+            expensive_model = "groq/mixtral-8x7b-32768"
             print(f"Cascading: {cheap_model} confidence too low ({confidence_pct:.2f}). Escalating to {expensive_model}.")
             try:
-                res2 = client.chat.completions.create(
-                    messages=[{"role": "user", "content": prompt}],
+                res2 = completion(
                     model=expensive_model,
+                    messages=[{"role": "user", "content": prompt}],
                     temperature=0.2
                 )
                 escalated_answer = res2.choices[0].message.content

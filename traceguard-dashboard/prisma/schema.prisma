@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model spans {
+  span_id           String  @id
+  trace_id          String
+  parent_span_id    String?
+  name              String
+  start_time        BigInt
+  end_time          BigInt
+  status_code       String
+  attributes        String
+  events            String
+  
+  @@index([trace_id])
+}
+
+model datasets {
+  id                String   @id
+  trace_id          String
+  name              String
+  spans_json        String
+  created_at        DateTime @default(now())
+}

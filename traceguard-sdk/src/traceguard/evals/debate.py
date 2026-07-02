@@ -12,16 +12,16 @@ class ConstructorAuditorTriad:
     """
     def __init__(self, llm_callable: Callable[[str], str] = None, judge_callable: Callable[[str, str], Tuple[float, float]] = None):
         import os
-        from groq import Groq
-        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY", ""))
-        self.model = "llama3-8b-8192"
+        from litellm import completion
+        self.model = "groq/llama3-8b-8192"
         self.judge = judge_callable
         
-    def _groq_llm(self, prompt: str) -> str:
+    def _litellm_call(self, prompt: str) -> str:
+        from litellm import completion
         try:
-            res = self.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
+            res = completion(
                 model=self.model,
+                messages=[{"role": "user", "content": prompt}],
                 temperature=0.7
             )
             return res.choices[0].message.content
@@ -38,13 +38,13 @@ class ConstructorAuditorTriad:
             # 1. Constructor Thread
             with tracer.start_as_current_span("agent.debate.constructor") as const_span:
                 const_span.set_attribute("gen_ai.agent.swarm.id", "debate_triad")
-                constructor_argument = self._groq_llm(f"Defend why this answer is correct for the prompt: '{prompt}'. Answer: '{target_answer}'")
+                constructor_argument = self._litellm_call(f"Defend why this answer is correct for the prompt: '{prompt}'. Answer: '{target_answer}'")
                 const_span.set_attribute("gen_ai.completion", constructor_argument)
                 
             # 2. Auditor Thread
             with tracer.start_as_current_span("agent.debate.auditor") as aud_span:
                 aud_span.set_attribute("gen_ai.agent.swarm.id", "debate_triad")
-                auditor_argument = self._groq_llm(f"Critique and attack why this answer is flawed for the prompt: '{prompt}'. Answer: '{target_answer}'")
+                auditor_argument = self._litellm_call(f"Critique and attack why this answer is flawed for the prompt: '{prompt}'. Answer: '{target_answer}'")
                 aud_span.set_attribute("gen_ai.completion", auditor_argument)
                 
             # 3. Judge Thread

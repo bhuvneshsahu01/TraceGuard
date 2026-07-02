@@ -1,58 +1,47 @@
 import { NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+import { PrismaClient } from '@prisma/client';
 
-const dbPath = path.join(process.cwd(), '..', '.traceguard.db');
-
-function buildTraceTree(spans: any[]) {
-  const spanMap = new Map();
-  const rootSpans: any[] = [];
-
-  // Parse attributes and events, initialize children array
-  spans.forEach(span => {
-    try {
-      if (span.attributes) span.attributes = JSON.parse(span.attributes);
-      if (span.events) span.events = JSON.parse(span.events);
-    } catch (e) {
-      // Ignore JSON parse errors
-    }
-    span.children = [];
-    spanMap.set(span.span_id, span);
-  });
-
-  // Build the tree
-  spans.forEach(span => {
-    if (span.parent_span_id && spanMap.has(span.parent_span_id)) {
-      spanMap.get(span.parent_span_id).children.push(span);
-    } else {
-      rootSpans.push(span);
-    }
-  });
-
-  return rootSpans;
-}
+const prisma = new PrismaClient();
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  if (!fs.existsSync(dbPath)) {
-    return NextResponse.json({ error: "Database not found" }, { status: 404 });
-  }
-
   try {
-    const db = new Database(dbPath, { readonly: true });
-    
-    // Check if eval columns exist
-    const tableInfo = db.prepare("PRAGMA table_info(spans)").all();
-    const hasFaithfulness = tableInfo.some((col: any) => col.name === 'eval_faithfulness');
-    
-    let query = `SELECT * FROM spans WHERE trace_id = ? ORDER BY start_time ASC`;
-    const spans = db.prepare(query).all(params.id);
-    db.close();
-    
-    const tree = buildTraceTree(spans);
-    
-    return NextResponse.json({ spans: tree });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const spans = await prisma.spans.findMany({
+      where: {
+        trace_id: params.id
+      },
+      orderBy: {
+        start_time: 'asc'
+      }
+    });
+
+    // Build the tree
+    const spanMap = new Map();
+    const roots: any[] = [];
+
+    spans.forEach(s => {
+      spanMap.set(s.span_id, {
+        span_id: s.span_id,
+        parent_id: s.parent_span_id,
+        name: s.name,
+        start_time: Number(s.start_time),
+        end_time: Number(s.end_time),
+        status_code: s.status_code,
+        attributes: JSON.parse(s.attributes || '{}'),
+        events: JSON.parse(s.events || '[]'),
+        children: []
+      });
+    });
+
+    spanMap.forEach(node => {
+      if (node.parent_id && spanMap.has(node.parent_id)) {
+        spanMap.get(node.parent_id).children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    return NextResponse.json({ spans: roots });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

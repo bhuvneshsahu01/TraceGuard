@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: traceguard
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: traceguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: .
@@ -41,3 +52,4 @@ services:
 
 volumes:
   traceguard_data:
+  postgres_data:

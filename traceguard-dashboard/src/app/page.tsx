@@ -1,27 +1,19 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import useSWR from 'swr';
+import { TopologyGraph } from '../components/TopologyGraph';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 export default function Home() {
-  const [traces, setTraces] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/traces')
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) throw new Error(data.error);
-        // Reverse to show oldest to newest on the chart
-        setTraces((data.traces || []).reverse());
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetcher = (url: string) => fetch(url).then(r => r.json());
+  const { data, error: swrError, isLoading } = useSWR('/api/traces', fetcher, { refreshInterval: 1000 });
+  const traces = data?.traces ? [...data.traces].reverse() : [];
+  const loading = isLoading;
+  const error = swrError ? swrError.message : (data?.error || null);
 
   const { total, anomalies, passRate, latencyData, statusData, totalCost, avgFaithfulness, costData, costPerResolution, avgToolROI } = useMemo(() => {
     if (traces.length === 0) return { total: 0, anomalies: 0, passRate: 0, latencyData: [], statusData: [], totalCost: 0, avgFaithfulness: 0, costData: [], costPerResolution: 0, avgToolROI: 0 };
@@ -90,7 +82,7 @@ export default function Home() {
 
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [traceTree, setTraceTree] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'tree' | 'swimlane'>('tree');
+  const [viewMode, setViewMode] = useState<'tree' | 'swimlane' | 'topology'>('tree');
 
   const fetchTraceTree = async (id: string) => {
     setSelectedTraceId(id);
@@ -411,6 +403,7 @@ export default function Home() {
                 <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '4px', display: 'flex', overflow: 'hidden' }}>
                   <button onClick={() => setViewMode('tree')} style={{ background: viewMode === 'tree' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🌲 Tree</button>
                   <button onClick={() => setViewMode('swimlane')} style={{ background: viewMode === 'swimlane' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🏊 Swimlane</button>
+                  <button onClick={() => setViewMode('topology')} style={{ background: viewMode === 'topology' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🕸️ Topology</button>
                 </div>
               </div>
               <div>
@@ -419,7 +412,7 @@ export default function Home() {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              {viewMode === 'tree' ? renderTree(traceTree) : renderSwimlane(traceTree)}
+              {viewMode === 'tree' ? renderTree(traceTree) : viewMode === 'swimlane' ? renderSwimlane(traceTree) : <TopologyGraph traces={traceTree} />}
             </div>
           </div>
         </div>

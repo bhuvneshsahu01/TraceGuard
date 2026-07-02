@@ -18,41 +18,43 @@ class SQLiteSpanExporter(SpanExporter):
 
     def _get_connection(self) -> sqlite3.Connection:
         # Use isolation_level=None for autocommit, or handle transactions manually.
-        # We handle transactions manually in export for batching.
-        return sqlite3.connect(self.db_path, check_same_thread=False)
+        
+    def _get_connection(self):
+        if self.is_postgres:
+            import psycopg2
+            return psycopg2.connect(self.db_url)
+        else:
+            import sqlite3
+            return sqlite3.connect(self.db_path)
 
-    def _init_db(self) -> None:
-        """Initializes the SQLite schema."""
+    def _init_db(self):
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS traces (
-                    trace_id TEXT PRIMARY KEY,
-                    start_time INTEGER
-                )
-            ''')
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS spans (
-                    span_id TEXT PRIMARY KEY,
-                    trace_id TEXT NOT NULL,
-                    parent_span_id TEXT,
-                    name TEXT NOT NULL,
-                    start_time INTEGER NOT NULL,
-                    end_time INTEGER NOT NULL,
-                    status_code TEXT NOT NULL,
-                    attributes TEXT,
-                    events TEXT
-                )
-            ''')
-            cursor.execute('CREATE INDEX IF NOT EXISTS idx_spans_trace_id ON spans(trace_id)')
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS datasets (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    spans TEXT NOT NULL
-                )
-            ''')
+            if self.is_postgres:
+                # Postgres schema creation is handled by Prisma via Next.js
+                # We just verify connection here
+                pass
+            else:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS traces (
+                        trace_id TEXT PRIMARY KEY,
+                        start_time INTEGER
+                    )
+                ''')
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS spans (
+                        span_id TEXT PRIMARY KEY,
+                        trace_id TEXT,
+                        parent_span_id TEXT,
+                        name TEXT,
+                        start_time INTEGER,
+                        end_time INTEGER,
+                        status_code TEXT,
+                        attributes TEXT,
+                        events TEXT,
+                        FOREIGN KEY(trace_id) REFERENCES traces(trace_id)
+                    )
+                ''')
             conn.commit()
 
     def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
@@ -73,10 +75,18 @@ class SQLiteSpanExporter(SpanExporter):
                 ]
                 
                 if traces_data:
-                    cursor.executemany('''
-                        INSERT OR IGNORE INTO traces (trace_id, start_time)
-                        VALUES (?, ?)
-                    ''', traces_data)
+                    if self.is_postgres:
+                        try:
+                            # Postgres syntax
+                            from psycopg2.extras import execute_values
+                            execute_values(cursor, 'INSERT INTO traces (trace_id, start_time) VALUES %s ON CONFLICT DO NOTHING', traces_data)
+                        except Exception:
+                            pass
+                    else:
+                        cursor.executemany('''
+                            INSERT OR IGNORE INTO traces (trace_id, start_time)
+                            VALUES (?, ?)
+                        ''', traces_data)
 
                 # Insert spans
                 spans_data = []
@@ -108,16 +118,25 @@ class SQLiteSpanExporter(SpanExporter):
                         events_json
                     ))
 
-                cursor.executemany('''
-                    INSERT OR REPLACE INTO spans 
-                    (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', spans_data)
+                if self.is_postgres:
+                    from psycopg2.extras import execute_values
+                    execute_values(cursor, '''
+                        INSERT INTO spans 
+                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events)
+                        VALUES %s
+                        ON CONFLICT DO NOTHING
+                    ''', spans_data)
+                else:
+                    cursor.executemany('''
+                        INSERT OR REPLACE INTO spans 
+                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', spans_data)
                 
                 conn.commit()
             return SpanExportResult.SUCCESS
         except Exception as e:
-            logger.error(f"Failed to export spans to SQLite: {e}")
+            logger.error(f"Failed to export spans to DB: {e}")
             return SpanExportResult.FAILURE
 
     def reconstruct_swarm_dag(self, swarm_id: str) -> list[dict]:
