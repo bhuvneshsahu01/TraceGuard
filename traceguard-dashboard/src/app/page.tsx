@@ -90,6 +90,7 @@ export default function Home() {
 
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [traceTree, setTraceTree] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'tree' | 'swimlane'>('tree');
 
   const fetchTraceTree = async (id: string) => {
     setSelectedTraceId(id);
@@ -225,6 +226,56 @@ export default function Home() {
     )});
   };
 
+  const renderSwimlane = (nodes: any[]) => {
+    // 1. Flatten the tree to find all spans
+    const flatten = (n: any[]): any[] => {
+      let flat: any[] = [];
+      n.forEach(node => {
+        flat.push(node);
+        if (node.children) flat = flat.concat(flatten(node.children));
+      });
+      return flat;
+    };
+    
+    const allSpans = flatten(nodes).sort((a, b) => a.start_time - b.start_time);
+    if (allSpans.length === 0) return null;
+    
+    // 2. Identify agent lanes
+    const lanes = Array.from(new Set(allSpans.map(s => s.name)));
+    
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowX: 'auto', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+        {lanes.map(lane => (
+          <div key={lane} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+            <div style={{ width: '200px', flexShrink: 0, fontWeight: 'bold', borderRight: '1px solid rgba(255,255,255,0.2)', paddingRight: '16px' }}>
+              🏊 {lane}
+            </div>
+            <div style={{ display: 'flex', flex: 1, position: 'relative', height: '60px', marginLeft: '16px', alignItems: 'center' }}>
+              {allSpans.filter(s => s.name === lane).map((span, idx) => {
+                const isError = span.status_code === 'ERROR';
+                const memoryLock = span.attributes?.['swarm.memory_lock'];
+                return (
+                  <div key={span.span_id} style={{ 
+                    marginRight: '8px', 
+                    padding: '8px 12px', 
+                    background: isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(96, 165, 250, 0.1)',
+                    border: `1px solid ${isError ? '#ef4444' : '#60a5fa'}`,
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {span.attributes?.['openinference.span.kind'] || 'SPAN'} 
+                    {memoryLock && <span style={{marginLeft:'4px'}}>🔒</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <header>
@@ -355,14 +406,20 @@ export default function Home() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div className="glass" style={{ width: '80%', height: '80%', padding: '32px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0 }}>Trace Tree: <code style={{ fontSize: '1rem' }}>{selectedTraceId}</code></h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <h2 style={{ margin: 0 }}>Trace: <code style={{ fontSize: '1rem' }}>{selectedTraceId}</code></h2>
+                <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '4px', display: 'flex', overflow: 'hidden' }}>
+                  <button onClick={() => setViewMode('tree')} style={{ background: viewMode === 'tree' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🌲 Tree</button>
+                  <button onClick={() => setViewMode('swimlane')} style={{ background: viewMode === 'swimlane' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🏊 Swimlane</button>
+                </div>
+              </div>
               <div>
                 <button onClick={promoteToDataset} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '16px' }}>Promote to Dataset</button>
                 <button onClick={() => setSelectedTraceId(null)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Close</button>
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              {renderTree(traceTree)}
+              {viewMode === 'tree' ? renderTree(traceTree) : renderSwimlane(traceTree)}
             </div>
           </div>
         </div>

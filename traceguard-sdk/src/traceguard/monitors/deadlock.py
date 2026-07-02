@@ -1,39 +1,56 @@
-from typing import List, Set
+from typing import Dict, List, Set
 
-class DeadlockDetector:
+class SwarmDeadlockError(Exception):
+    pass
+
+class SwarmCycleDetector:
     """
-    Detects circular logic loops and flat topologies lacking hierarchical arbitration.
+    GPT Phase 25: Real-time Swarm Deadlock Monitor.
+    Detects Circular Delegation (e.g., Agent A -> B -> C -> A) using 
+    cycle-detection on the live delegation graph, terminating the swarm 
+    before it burns through tokens in an infinite loop.
     """
     def __init__(self):
-        self.dependency_graph = {}
+        # Maps an agent to the set of agents it is currently waiting on
+        self.delegation_graph: Dict[str, Set[str]] = {}
         
-    def add_edge(self, agent_from: str, agent_to: str):
-        if agent_from not in self.dependency_graph:
-            self.dependency_graph[agent_from] = []
-        self.dependency_graph[agent_from].append(agent_to)
+    def log_delegation(self, source_agent: str, target_agent: str):
+        """Records that source_agent delegated a task to target_agent."""
+        if source_agent not in self.delegation_graph:
+            self.delegation_graph[source_agent] = set()
+        self.delegation_graph[source_agent].add(target_agent)
         
-    def _has_cycle(self, node: str, visited: Set[str], stack: Set[str]) -> bool:
-        visited.add(node)
-        stack.add(node)
+        self.check_for_cycles()
         
-        for neighbor in self.dependency_graph.get(node, []):
-            if neighbor not in visited:
-                if self._has_cycle(neighbor, visited, stack):
+    def resolve_delegation(self, source_agent: str, target_agent: str):
+        """Records that target_agent returned control to source_agent."""
+        if source_agent in self.delegation_graph and target_agent in self.delegation_graph[source_agent]:
+            self.delegation_graph[source_agent].remove(target_agent)
+            
+    def check_for_cycles(self):
+        """Runs Depth-First Search to detect circular waits."""
+        visited: Set[str] = set()
+        recursion_stack: Set[str] = set()
+        
+        def dfs(node: str) -> bool:
+            visited.add(node)
+            recursion_stack.add(node)
+            
+            for neighbor in self.delegation_graph.get(node, []):
+                if neighbor not in visited:
+                    if dfs(neighbor):
+                        return True
+                elif neighbor in recursion_stack:
+                    # Found a cycle
                     return True
-            elif neighbor in stack:
-                return True
-                
-        stack.remove(node)
-        return False
-
-    def check_for_deadlock(self) -> bool:
-        """
-        Returns True if a circular dependency (Hallucination Deadlock) is found.
-        """
-        visited = set()
-        stack = set()
-        for node in self.dependency_graph:
-            if node not in visited:
-                if self._has_cycle(node, visited, stack):
-                    return True
-        return False
+                    
+            recursion_stack.remove(node)
+            return False
+            
+        for agent in list(self.delegation_graph.keys()):
+            if agent not in visited:
+                if dfs(agent):
+                    raise SwarmDeadlockError(
+                        f"Circular delegation loop detected! The swarm has deadlocked. "
+                        f"Current Wait Graph: {self.delegation_graph}"
+                    )
