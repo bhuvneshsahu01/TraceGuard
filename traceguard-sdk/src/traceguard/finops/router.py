@@ -48,6 +48,30 @@ class SemanticRouter:
         if best_match == "complex_coding":
             return "gpt-4o"
         return "llama-3.1-8b-instant"
+        
+    def cascade_route(self, prompt: str, evaluator: callable) -> tuple[str, float]:
+        """
+        GPT Phase 26: Dynamic Model Cascading.
+        Executes a cheap model (llama-3.1-8b). If its internal confidence 
+        (or a fast heuristic validation) is low, it automatically transparently 
+        escalates and re-routes to gpt-4o.
+        """
+        # Step 1: Try the cheap fast model
+        cheap_model = "llama-3.1-8b-instant"
+        initial_answer, confidence_logprob = evaluator(cheap_model, prompt)
+        
+        # Step 2: Check confidence
+        import math
+        confidence_pct = math.exp(confidence_logprob) if confidence_logprob < 0 else confidence_logprob
+        
+        if confidence_pct < 0.75:
+            # Low confidence -> cascade to expensive model
+            print(f"Cascading: {cheap_model} confidence too low ({confidence_pct:.2f}). Escalating to gpt-4o.")
+            expensive_model = "gpt-4o"
+            escalated_answer, escalated_logprob = evaluator(expensive_model, prompt)
+            return escalated_answer, escalated_logprob
+            
+        return initial_answer, confidence_logprob
 
 class AgentAsARouter:
     """Dynamic cost-quality routing using Context-Action-Feedback loop."""
