@@ -16,9 +16,7 @@ class SQLiteSpanExporter(SpanExporter):
         self.db_path = db_path
         self._init_db()
 
-    def _get_connection(self) -> sqlite3.Connection:
-        # Use isolation_level=None for autocommit, or handle transactions manually.
-        
+
     def _get_connection(self):
         if self.is_postgres:
             import psycopg2
