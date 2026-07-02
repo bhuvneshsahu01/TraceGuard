@@ -26,7 +26,7 @@ export default function Home() {
     let sumFaithfulness = 0;
     let evalCount = 0;
     
-    const costData = [];
+    const costData: { name: string; cost: number; runCost: number }[] = [];
     let cumulativeCost = 0;
 
     const latencyData = traces.map((t, idx) => {
