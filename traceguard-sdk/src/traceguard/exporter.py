@@ -12,6 +12,9 @@ class SQLiteSpanExporter(SpanExporter):
     Optimized for fast batch inserts.
     """
     def __init__(self, db_path: str = ".traceguard.db"):
+        import os
+        self.db_url = os.environ.get("DATABASE_URL")
+        self.is_postgres = self.db_url and self.db_url.startswith("postgres")
         self.db_path = db_path
         self._init_db()
 
