@@ -60,3 +60,33 @@ class VisualSanitizerAgent:
                 return {"status": "BLOCKED", "reason": "Cross-modal attention anomaly exceeds safety limits"}
                 
             return {"status": "CLEAN", "image_data": payload.get("image_data")}
+
+class AudioSanitizerAgent:
+    """
+    Sub-agent deployed within the pre-execution hook that analyzes frequency domains 
+    to detect inaudible ultrasonic adversarial commands (e.g., DolphinAttack style).
+    """
+    def __init__(self, ultrasonic_threshold_khz: float = 20.0):
+        self.ultrasonic_threshold_khz = ultrasonic_threshold_khz
+        
+    def _run_fft_analysis(self, audio_data: Any) -> float:
+        """Simulates running a Fast Fourier Transform (FFT) to find peak frequencies."""
+        # Stub: Return simulated peak frequency in kHz
+        return getattr(audio_data, "peak_frequency_khz", 1.0)
+        
+    def sanitize_audio(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Scans an audio payload for hidden adversarial noise via FFT frequency analysis.
+        """
+        with tracer.start_as_current_span("sanitize.audio") as span:
+            span.set_attribute("gen_ai.input.modality", "audio")
+            
+            peak_freq = self._run_fft_analysis(payload.get("audio_data"))
+            span.set_attribute("traceguard.audio.peak_frequency", peak_freq)
+            
+            # If the audio contains significant commands embedded in ultrasonic ranges
+            if peak_freq > self.ultrasonic_threshold_khz:
+                span.set_attribute("traceguard.block_reason", "Audio_Ultrasonic_Attack")
+                return {"status": "BLOCKED", "reason": f"Adversarial ultrasonic frequencies detected ({peak_freq} kHz)"}
+                
+            return {"status": "CLEAN", "audio_data": payload.get("audio_data")}

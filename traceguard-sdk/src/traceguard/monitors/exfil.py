@@ -22,6 +22,22 @@ class SemanticDLPEngine:
                 return False
         return True
 
+    def check_differential_outlier(self, inbound_context_tokens: int, outbound_tool_tokens: int) -> bool:
+        """
+        Detects RAG-poisoning data exfiltration symptoms.
+        If an agent receives a tiny user prompt but attempts to send a massive 
+        payload in an outbound API call, it's a differential outlier.
+        Returns True if safe, False if an outlier.
+        """
+        # If the outbound payload is 50x larger than the inbound context, flag it
+        if inbound_context_tokens > 0 and (outbound_tool_tokens / inbound_context_tokens) > 50.0:
+            with tracer.start_as_current_span("exfil.differential_outlier") as span:
+                span.set_attribute("traceguard.exfil.inbound_tokens", inbound_context_tokens)
+                span.set_attribute("traceguard.exfil.outbound_tokens", outbound_tool_tokens)
+                span.set_attribute("traceguard.block_reason", "Differential_Outlier_Exfil")
+            return False
+        return True
+
 class DataFlowTracker:
     """
     Tracks agent handoffs and tool interactions across the Swarm Graph to detect 
