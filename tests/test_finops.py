@@ -1,6 +1,5 @@
 import pytest
 from traceguard.finops.budget import AdaptiveBudgetMonitor, BudgetExceededError
-from traceguard.finops.router import SemanticRouter
 
 def test_adaptive_budget():
     monitor = AdaptiveBudgetMonitor()

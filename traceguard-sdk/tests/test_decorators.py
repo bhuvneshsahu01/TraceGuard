@@ -1,6 +1,5 @@
 import pytest
 import sqlite3
-import time
 from traceguard import configure_traceguard, observe
 from opentelemetry import trace
 import asyncio

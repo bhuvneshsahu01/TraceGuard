@@ -3,11 +3,12 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const spans = await prisma.spans.findMany({
       where: {
-        trace_id: params.id
+        trace_id: id
       },
       orderBy: {
         start_time: 'asc'

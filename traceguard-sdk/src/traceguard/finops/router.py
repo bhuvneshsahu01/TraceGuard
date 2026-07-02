@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Optional
 
 class SemanticCacheLayer:
     """Converts queries to dense embeddings and serves cached responses if similarity > threshold."""
@@ -55,7 +55,6 @@ class SemanticRouter:
         Executes a cheap model (e.g., groq/llama3-8b-8192). If low confidence, 
         transparently escalates to a flagship model (e.g., groq/mixtral-8x7b-32768 or openai/gpt-4o).
         """
-        import os
         from litellm import completion
         import math
         

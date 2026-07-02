@@ -1,4 +1,3 @@
-import pytest
 from traceguard.sanitizers import AudioSanitizerAgent
 from traceguard.monitors.exfil import SemanticDLPEngine
 
@@ -19,7 +18,7 @@ def test_differential_outlier():
     dlp = SemanticDLPEngine()
     
     # Normal ratio (1:10)
-    assert dlp.check_differential_outlier(10, 100) == True
+    assert dlp.check_differential_outlier(10, 100)
     
     # RAG Poison Exfil ratio (1:100)
-    assert dlp.check_differential_outlier(10, 1000) == False
+    assert not dlp.check_differential_outlier(10, 1000)

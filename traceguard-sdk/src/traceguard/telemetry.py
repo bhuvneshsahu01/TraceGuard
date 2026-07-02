@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from opentelemetry import trace
 from .privacy import RealTimeRedactionEngine, ExternalStorageReference
 

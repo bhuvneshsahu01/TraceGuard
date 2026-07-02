@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Any, Callable
+from typing import Tuple, Callable
 from opentelemetry import trace
 
 tracer = trace.get_tracer("traceguard.gen_ai")
@@ -11,8 +11,6 @@ class ConstructorAuditorTriad:
     verbosity and positional biases.
     """
     def __init__(self, llm_callable: Callable[[str], str] = None, judge_callable: Callable[[str, str], Tuple[float, float]] = None):
-        import os
-        from litellm import completion
         self.model = "groq/llama3-8b-8192"
         self.judge = judge_callable
         

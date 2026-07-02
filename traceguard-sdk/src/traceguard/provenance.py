@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 class ProvenanceRecord:
     def __init__(self, data_id: str, modality: str, source_origin: str, trust_level: float):

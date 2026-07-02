@@ -46,7 +46,6 @@ def log_rag_context(documents: list[str]) -> None:
     if span and span.is_recording():
         span.set_attribute("rag.context", json.dumps(documents))
 
-import re
 
 class TraceGuardFirewallBlock(Exception):
     """Raised when the TraceGuard Firewall intercepts malicious or non-compliant payloads."""

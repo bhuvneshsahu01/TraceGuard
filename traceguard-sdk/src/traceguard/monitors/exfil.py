@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, List
 from opentelemetry import trace
 
 tracer = trace.get_tracer("traceguard.gen_ai")
