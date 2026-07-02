@@ -57,21 +57,39 @@ class DualLayerTelemetry:
         safe_completion = self.redaction_engine.redact(completion_text)
         span.set_attribute("gen_ai.completion", safe_completion)
 
-    def start_retrieval_span(self, query: str, top_k: int, rerank: bool = False, swarm_id: str = None):
-        """
-        Explicit Vector DB retrieval span (Phase 21 Gap Coverage).
-        """
+    def start_rag_query_parent(self, query: str, swarm_id: str = None):
+        """Starts the parent context for a granular RAG pipeline."""
+        attributes = {"openinference.span.kind": "CHAIN", "gen_ai.rag.query": query}
+        if swarm_id: attributes["gen_ai.agent.swarm.id"] = swarm_id
+        return self.tracer.start_as_current_span("rag.query", attributes=attributes)
+        
+    def start_rag_embedding_span(self, model_name: str):
+        """Phase 27: Granular RAG - Embedding generation."""
+        attributes = {"openinference.span.kind": "EMBEDDING", "rag.embedding.model": model_name}
+        return self.tracer.start_as_current_span("rag.embedding", attributes=attributes)
+        
+    def start_rag_retrieval_span(self, query: str, top_k: int):
+        """Phase 27: Granular RAG - Vector DB search."""
         attributes = {
             "openinference.span.kind": "RETRIEVER",
-            "gen_ai.operation.name": "retrieval",
-            "gen_ai.retrieval.query": query,
-            "gen_ai.retrieval.top_k": top_k,
-            "gen_ai.retrieval.rerank_enabled": rerank
+            "rag.retrieval.query": query,
+            "rag.retrieval.top_k": top_k
         }
-        if swarm_id:
-            attributes["gen_ai.agent.swarm.id"] = swarm_id
-            
-        return self.tracer.start_as_current_span("Vector DB Retrieval", attributes=attributes)
+        return self.tracer.start_as_current_span("rag.retrieval", attributes=attributes)
+        
+    def start_rag_reranking_span(self, reranking_model: str):
+        """Phase 27: Granular RAG - Cross-encoder reranking."""
+        attributes = {"openinference.span.kind": "RERANKER", "rag.reranking.model": reranking_model}
+        return self.tracer.start_as_current_span("rag.reranking", attributes=attributes)
+        
+    def start_rag_context_span(self, token_count: int, truncated: bool = False):
+        """Phase 27: Granular RAG - Context construction."""
+        attributes = {
+            "openinference.span.kind": "TOOL",
+            "rag.context.token_count": token_count,
+            "rag.context.truncated": truncated
+        }
+        return self.tracer.start_as_current_span("rag.context", attributes=attributes)
         
     def record_rag_chunk(self, span: trace.Span, chunk_content: str, score: float, provenance: str):
         """Records highly granular RAG metadata."""
