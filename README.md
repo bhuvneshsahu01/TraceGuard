@@ -1,59 +1,99 @@
 <div align="center">
-  <h1>🛡️ TraceGuard V3</h1>
-  <p><strong>Next-Gen Autonomous Observability & Security Platform for AI Agents</strong></p>
+  <h1>🛡️ TraceGuard</h1>
+  <p><strong>The Unified Agentic Observability, Evaluation, and Security Platform</strong></p>
+
+  [![CI](https://github.com/bhuvneshsahu01/TraceGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/bhuvneshsahu01/TraceGuard/actions/workflows/ci.yml)
+  [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/traceguard)](https://pypi.org/project/traceguard/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+  <p align="center">
+    TraceGuard is an enterprise-grade platform designed to monitor, evaluate, and secure autonomous LLM agents and multi-agent swarms.
+  </p>
 </div>
 
-# 🛡️ TraceGuard V3: Advanced Generative AI Security & Observability
+---
 
-TraceGuard V3 is the ultimate enterprise-grade infrastructure for orchestrating, securing, and evaluating Large Language Models (LLMs) and Autonomous Agent Swarms. Built on OpenTelemetry (OTel), it enforces robust multimodal firewalls, semantic data-loss prevention, dynamic finops, and state-of-the-art multi-agent evaluators.
+## 🌟 Why TraceGuard?
 
-**Trace → Autonomous Security → Statistical Eval → Multi-Agent Swarms → FinOps Routing.**
+As AI agents move from experimental scripts to production systems, developers face three massive hurdles:
+1. **Black-box Execution**: Agents loop autonomously, making it impossible to debug when a tool fails or an agent gets stuck in a recursive loop.
+2. **Silent Degradation**: Base models change, prompts drift, and performance silently drops in production.
+3. **Security Risks**: Autonomous agents connected to databases and APIs are highly susceptible to prompt injection, data exfiltration, and adversarial attacks.
 
-## 🧠 The Moat: TraceGuard V3 Features
-
-### 🛡️ 1. Sovereign Security & Automated Red Teaming
-- **Multimodal Firewalls:** Detects text-embedded prompt injections (CrossMPI) hidden in images and ultrasonic audio frequencies (e.g., DolphinAttack) via FFT/OCR sanitizers.
-- **Differential Exfiltration Monitoring:** Actively analyzes the token ratio of inbound prompts vs. outbound API calls. If an agent tries to dump massive data payloads based on a tiny input (RAG poisoning), it instantly terminates the process.
-- **CI/CD Fuzzing Hooks:** Reinforcement Learning Red Team agents that automatically attack new prompt PRs to proactively find vulnerabilities.
-
-### 📊 2. LLM-as-a-Judge & Empirical Calibration
-- **Constructor/Auditor/Judge Debate Triad:** Defeats verbosity and position bias by spawning two agents to argue opposing sides of an evaluation, scored by a third Judge.
-- **Logistic / Isotonic Calibrators:** Maps an LLM's inherently flawed raw log-probabilities to a mathematically sound, empirical percentage of true correctness based on historical human labels.
-
-### 🐝 3. Autonomous Swarm Observability
-- **Deadlock Cycle Detection:** Analyzes real-time delegation graphs to detect circular wait states (Agent A -> B -> C -> A), preventing infinite loops from burning cloud budgets.
-- **Swimlane UIs:** Visually untangles parallel asynchronous Swarm waves by plotting dedicated horizontal lanes per agent, complete with state contamination overlays.
-
-### 💸 4. Dynamic FinOps & Cascading Routers
-- **Dynamic Model Cascading:** Automatically attempts to resolve prompts with cheap models (e.g., Llama-3). If the model's self-reported confidence is low, it seamlessly suppresses the weak response and re-runs the prompt on GPT-4o.
-- **Adaptive Early Termination:** Calculates the 95% Confidence Interval for historical run costs and aggressively terminates active Swarms that breach the upper limit.
-
-### 📡 5. Deep RAG Sub-span Schemas (OTel)
-- **Granular RAG Breakdown:** Splits monolithic RAG spans into surgical `rag.embedding`, `rag.retrieval`, `rag.reranking`, and `rag.context` sub-spans, making it trivial to isolate the exact origin of a hallucination.
-
-## 🚀 Quick Start
-
-1. Set up your OpenTelemetry Collector locally.
-2. Initialize TraceGuard with your target budget and logging level.
-
-```python
-from traceguard import TraceGuard
-from traceguard.finops.router import SemanticRouter
-
-# 1. Initialize TraceGuard Platform
-tg = TraceGuard(budget_usd=1000.0)
-
-# 2. Let the Semantic Router pick the cheapest model that meets your confidence threshold
-router = SemanticRouter()
-response, confidence = router.cascade_route("Solve P=NP", evaluator_func)
-```
+**TraceGuard** solves this by injecting a transparent, OpenTelemetry-backed nervous system into your agents, automatically tracing their execution, running stochastic evaluations, and actively fuzzing them for vulnerabilities.
 
 ## 🏗️ Architecture
 
-TraceGuard is built as a highly-modular monorepo containing 5 distinct domains:
+TraceGuard is built as a modular ecosystem of 4 lightweight Python SDKs and a Next.js Analytics Dashboard.
 
-- `traceguard-sdk/`: The core OpenTelemetry instrumentation, Dynamic FinOps routers, Swarm Cycle Detectors, and Evaluators.
-- `traceguard-run/`: The CLI for kicking off Agent Swarm jobs and configuring model fallbacks.
-- `traceguard-curate/`: A specialized Golden Dataset pipeline for aligning future models.
-- `traceguard-fuzz/`: The RL-driven Autonomous Red Team for CI/CD fuzzing hooks.
-- `traceguard-dashboard/`: The powerful Next.js Swimlane web application for human-in-the-loop review.
+```mermaid
+graph TD
+    A[Your Agent Code] -->|OpenTelemetry Traces| B(traceguard-sdk)
+    A -->|Target| F(traceguard-fuzz)
+    
+    B -->|Export SQLite/Postgres| D[(TraceGuard DB)]
+    
+    C(traceguard-run) -->|Mathematical Evals & Drift| D
+    F -->|Adversarial Payloads| A
+    E(traceguard-curate) -->|Finetuning Datasets| D
+    
+    D -->|Real-time Analytics| G[Next.js Dashboard]
+    G -.->|Latency, Cost, FinOps| C
+```
+
+## 📦 The TraceGuard Suite
+
+| Package | Description | Quick Install |
+|---------|-------------|---------------|
+| **`traceguard-sdk`** | The core instrumentation library. Drop-in OpenTelemetry decorators for your LLM calls, Tools, and Swarm Agents. | `pip install traceguard` |
+| **`traceguard-run`** | The mathematical evaluation engine. Calculates Population Stability Index (PSI), Kolmogorov-Smirnov Tests, and Limit Cycles. | `pip install traceguard-run` |
+| **`traceguard-fuzz`** | The adversarial Red Teaming engine. Fuzzes your agents with multimodal attacks (Audio, Text) to test guardrails. | `pip install traceguard-fuzz` |
+| **`traceguard-curate`** | The dataset curation CLI. Automatically extracts highly-rated traces into JSONL for LLM finetuning. | `pip install traceguard-curate` |
+| **`traceguard-dashboard`** | Next.js (React 19) Dashboard with stunning Latency Heatmaps, FinOps tool ROI, and Trace Waterfalls. | `npm install` |
+
+## 🚀 Quick Start
+
+### 1. Instrument your Agent (`traceguard-sdk`)
+
+```python
+from traceguard.telemetry import AgentTracer
+
+tracer = AgentTracer(agent_name="financial-analyst", environment="production")
+
+@tracer.trace_tool()
+def search_database(query: str):
+    # Your tool logic here...
+    return "Data found"
+
+@tracer.trace_agent_cycle()
+def run_agent(task: str):
+    # Call LLM and tools
+    pass
+```
+
+### 2. Run the Dashboard
+
+```bash
+cd traceguard-dashboard
+npm install
+npx prisma generate
+npm run dev
+```
+Navigate to `http://localhost:3000` to see your real-time trace waterfall, drift charts, and FinOps metrics!
+
+### 3. Fuzz your Agent (`traceguard-fuzz`)
+
+```python
+from traceguard_fuzz.redteam import RLRedTeamAgent
+from traceguard_fuzz.harness import MultiModelHarness
+
+red_team = RLRedTeamAgent(target_agent_id="financial-analyst")
+payload = red_team.generate_attack()
+# Execute attack and monitor resilience...
+```
+
+## 🤝 Contributing
+Contributions are highly welcome! Please check out the `CONTRIBUTING.md` file for guidelines on how to run tests, linters (`ruff`, `mypy`), and submit Pull Requests.
+
+## 📄 License
+TraceGuard is Open Source and released under the [MIT License](LICENSE).
