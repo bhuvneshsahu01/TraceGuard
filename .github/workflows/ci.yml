@@ -56,7 +56,10 @@ jobs:
         node-version: 18
     - name: Install dependencies
       working-directory: traceguard-dashboard
-      run: npm install
+      run: npm install --legacy-peer-deps
+    - name: Generate Prisma Client
+      working-directory: traceguard-dashboard
+      run: npx prisma generate
     - name: Build Dashboard
       working-directory: traceguard-dashboard
       run: npm run build
