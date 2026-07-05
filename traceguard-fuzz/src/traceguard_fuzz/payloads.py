@@ -1,6 +1,6 @@
 import sys
 import random
-from typing import Any, List, Dict
+from typing import Any, List
 
 class PayloadGenerator:
     """Generates malicious payloads for fuzzing based on data types."""

@@ -1,6 +1,5 @@
 import pytest
 import sqlite3
-import json
 import os
 from traceguard_curate.extractor import TraceExtractor
 

@@ -1,5 +1,4 @@
 import sys
-from typing import List
 
 from traceguard_run.red_team import AttackLibrary, RLRedTeamAgent
 

@@ -1,13 +1,10 @@
 import typer
 from rich.console import Console
 from rich.table import Table
-from rich import print as rprint
 import numpy as np
-from typing import List
 
 from .math.bootstrap import calculate_bootstrap_ci
 from .math.drift import calculate_psi, calculate_ks_test
-from .math.cycles import detect_limit_cycle
 
 app = typer.Typer(help="TraceGuard Runner CLI")
 console = Console()
