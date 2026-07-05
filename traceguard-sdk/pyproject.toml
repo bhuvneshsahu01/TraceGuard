@@ -13,10 +13,23 @@ authors = [
     { name = "Bhuvnesh", email = "bhuvnesh@example.com" }
 ]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
+keywords = ["llm", "observability", "evaluation", "agents", "opentelemetry"]
+
+[project.urls]
+Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
+Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
+Documentation = "https://github.com/bhuvneshsahu01/TraceGuard/wiki"
 dependencies = [
     "pydantic>=2.0.0",
     "opentelemetry-api>=1.20.0",

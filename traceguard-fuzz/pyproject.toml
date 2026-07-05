@@ -13,10 +13,18 @@ authors = [
     { name = "Bhuvnesh", email = "bhuvnesh@example.com" }
 ]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Topic :: Security"
 ]
+keywords = ["llm", "security", "fuzzing", "redteam"]
+
+[project.urls]
+Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
+Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 dependencies = [
     "traceguard"
 ]

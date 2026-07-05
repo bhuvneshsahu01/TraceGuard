@@ -1,0 +1,42 @@
+name: Publish PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  pypi-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Mandatory for PyPI trusted publishing
+      contents: read
+    
+    strategy:
+      matrix:
+        package: [
+          "traceguard-sdk", 
+          "traceguard-run", 
+          "traceguard-fuzz", 
+          "traceguard-curate"
+        ]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install hatch
+      run: pip install hatch
+
+    - name: Build Wheel and sdist
+      working-directory: ${{ matrix.package }}
+      run: hatch build
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: ${{ matrix.package }}/dist/
