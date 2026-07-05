@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-pip install traceguard-curate
+pip install traceguard-ai-curate
 ```
 
 ## Usage

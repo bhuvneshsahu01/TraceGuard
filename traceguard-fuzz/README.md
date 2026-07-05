@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-pip install traceguard-fuzz
+pip install traceguard-ai-fuzz
 ```
 
 ## Usage

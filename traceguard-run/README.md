@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-pip install traceguard-run
+pip install traceguard-ai-run
 ```
 
 ## Usage

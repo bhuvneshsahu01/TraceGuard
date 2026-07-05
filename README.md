@@ -45,10 +45,10 @@ graph TD
 
 | Package | Description | Quick Install |
 |---------|-------------|---------------|
-| **`traceguard-sdk`** | The core instrumentation library. Drop-in OpenTelemetry decorators for your LLM calls, Tools, and Swarm Agents. | `pip install traceguard` |
-| **`traceguard-run`** | The mathematical evaluation engine. Calculates Population Stability Index (PSI), Kolmogorov-Smirnov Tests, and Limit Cycles. | `pip install traceguard-run` |
-| **`traceguard-fuzz`** | The adversarial Red Teaming engine. Fuzzes your agents with multimodal attacks (Audio, Text) to test guardrails. | `pip install traceguard-fuzz` |
-| **`traceguard-curate`** | The dataset curation CLI. Automatically extracts highly-rated traces into JSONL for LLM finetuning. | `pip install traceguard-curate` |
+| **`traceguard-sdk`** | The core instrumentation library. Drop-in OpenTelemetry decorators for your LLM calls, Tools, and Swarm Agents. | `pip install traceguard-ai` |
+| **`traceguard-run`** | The mathematical evaluation engine. Calculates Population Stability Index (PSI), Kolmogorov-Smirnov Tests, and Limit Cycles. | `pip install traceguard-ai-run` |
+| **`traceguard-fuzz`** | The adversarial Red Teaming engine. Fuzzes your agents with multimodal attacks (Audio, Text) to test guardrails. | `pip install traceguard-ai-fuzz` |
+| **`traceguard-curate`** | The dataset curation CLI. Automatically extracts highly-rated traces into JSONL for LLM finetuning. | `pip install traceguard-ai-curate` |
 | **`traceguard-dashboard`** | Next.js (React 19) Dashboard with stunning Latency Heatmaps, FinOps tool ROI, and Trace Waterfalls. | `npm install` |
 
 ## 🚀 Quick Start
