@@ -29,6 +29,6 @@ jobs:
         
     - name: Test with pytest
       env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'gsk_dummy_key_for_ci' }}
       run: |
         pytest tests/
