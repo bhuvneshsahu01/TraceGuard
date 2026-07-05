@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -17,6 +17,9 @@ model spans {
   status_code       String
   attributes        String
   events            String
+  agent_id          String?
+  parent_agent_id   String?
+  agent_role        String?
   
   @@index([trace_id])
 }

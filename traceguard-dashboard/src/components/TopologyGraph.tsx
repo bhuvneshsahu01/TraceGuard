@@ -3,7 +3,7 @@ import ReactFlow, { Background, Controls, Edge, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 export interface TopologyGraphProps {
-  traces: any[];
+  traces: { trace_id?: string }[];
 }
 
 export const TopologyGraph: React.FC<TopologyGraphProps> = ({ traces }) => {

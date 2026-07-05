@@ -19,8 +19,8 @@ export default function RootLayout({
             TraceGuard
           </h1>
           <div style={{ flex: 1 }} />
-          <a href="/" style={{ color: 'var(--foreground)', textDecoration: 'none' }}>Traces</a>
-          <a href="/" style={{ color: 'var(--foreground)', textDecoration: 'none' }}>Evaluations</a>
+          <a href="/#traces" style={{ color: 'var(--foreground)', textDecoration: 'none' }}>Traces</a>
+          <a href="/#evaluations" style={{ color: 'var(--foreground)', textDecoration: 'none' }}>Evaluations</a>
         </nav>
         <main style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
           {children}

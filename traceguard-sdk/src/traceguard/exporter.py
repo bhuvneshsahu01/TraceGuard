@@ -52,6 +52,9 @@ class SQLiteSpanExporter(SpanExporter):
                         status_code TEXT,
                         attributes TEXT,
                         events TEXT,
+                        agent_id TEXT,
+                        parent_agent_id TEXT,
+                        agent_role TEXT,
                         FOREIGN KEY(trace_id) REFERENCES traces(trace_id)
                     )
                 ''')
@@ -95,7 +98,7 @@ class SQLiteSpanExporter(SpanExporter):
                     span_id_hex = format(span.context.span_id, '016x')
                     parent_id_hex = format(span.parent.span_id, '016x') if span.parent else None
                     
-                    attributes_json = json.dumps(dict(span.attributes)) if span.attributes else None
+                    attributes_json = json.dumps(dict(span.attributes)) if span.attributes else "{}"
                     
                     events_list = []
                     for event in span.events:
@@ -104,8 +107,12 @@ class SQLiteSpanExporter(SpanExporter):
                             "timestamp": event.timestamp,
                             "attributes": dict(event.attributes) if event.attributes else {}
                         })
-                    events_json = json.dumps(events_list) if events_list else None
+                    events_json = json.dumps(events_list) if events_list else "[]"
                     
+                    agent_id = span.attributes.get("agent.id") if span.attributes else None
+                    parent_agent_id = span.attributes.get("parent.agent.id") if span.attributes else None
+                    agent_role = span.attributes.get("agent.role") if span.attributes else None
+
                     spans_data.append((
                         span_id_hex,
                         trace_id_hex,
@@ -115,22 +122,25 @@ class SQLiteSpanExporter(SpanExporter):
                         span.end_time,
                         span.status.status_code.name if span.status else "UNSET",
                         attributes_json,
-                        events_json
+                        events_json,
+                        agent_id,
+                        parent_agent_id,
+                        agent_role
                     ))
 
                 if self.is_postgres:
                     from psycopg2.extras import execute_values
                     execute_values(cursor, '''
                         INSERT INTO spans 
-                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events)
+                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events, agent_id, parent_agent_id, agent_role)
                         VALUES %s
                         ON CONFLICT DO NOTHING
                     ''', spans_data)
                 else:
                     cursor.executemany('''
                         INSERT OR REPLACE INTO spans 
-                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (span_id, trace_id, parent_span_id, name, start_time, end_time, status_code, attributes, events, agent_id, parent_agent_id, agent_role)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ''', spans_data)
                 
                 conn.commit()

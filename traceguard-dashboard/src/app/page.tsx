@@ -3,10 +3,26 @@
 import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { TopologyGraph } from '../components/TopologyGraph';
+import DriftChart from '../components/DriftChart';
+import LatencyHeatmap from '../components/LatencyHeatmap';
+import ToolROIFinOps from '../components/ToolROIFinOps';
+import TraceWaterfall from '../components/TraceWaterfall';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean, payload?: any[], label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: 'var(--background)', border: '1px solid var(--surface-border)', padding: '12px', borderRadius: '8px' }}>
+        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
+        <p style={{ margin: 0, color: payload[0].color }}>{payload[0].name}: {payload[0].value}</p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Home() {
   const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -68,21 +84,9 @@ export default function Home() {
 
   const COLORS = ['#22c55e', '#ef4444'];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{ background: 'var(--background)', border: '1px solid var(--surface-border)', padding: '12px', borderRadius: '8px' }}>
-          <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
-          <p style={{ margin: 0, color: payload[0].color }}>{payload[0].name}: {payload[0].value}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [traceTree, setTraceTree] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'tree' | 'swimlane' | 'topology'>('tree');
+  const [viewMode, setViewMode] = useState<'tree' | 'swimlane' | 'topology' | 'waterfall'>('tree');
 
   const fetchTraceTree = async (id: string) => {
     setSelectedTraceId(id);
@@ -304,8 +308,18 @@ export default function Home() {
 
       {!loading && !error && traces.length > 0 && (
         <>
-          {/* Charts Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {/* Advanced Analytics Row */}
+          <div id="evaluations" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <DriftChart />
+            <LatencyHeatmap />
+          </div>
+
+          <div style={{ marginTop: '24px' }}>
+            <ToolROIFinOps />
+          </div>
+
+          {/* Legacy Charts Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
             <section className="glass" style={{ padding: '32px' }}>
               <h2 style={{ fontSize: '1.5rem', marginBottom: '24px' }}>Latency Distribution</h2>
               <div style={{ width: '100%', height: 300 }}>
@@ -338,7 +352,7 @@ export default function Home() {
           </div>
 
           {/* HITL Table */}
-          <section className="glass" style={{ padding: '32px' }}>
+          <section id="traces" className="glass" style={{ padding: '32px', marginTop: '24px' }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Human-in-the-Loop (HITL) Queue</h2>
             <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>Review anomalous traces and hallucinations.</p>
             <div style={{ overflowX: 'auto' }}>
@@ -404,6 +418,7 @@ export default function Home() {
                   <button onClick={() => setViewMode('tree')} style={{ background: viewMode === 'tree' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🌲 Tree</button>
                   <button onClick={() => setViewMode('swimlane')} style={{ background: viewMode === 'swimlane' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🏊 Swimlane</button>
                   <button onClick={() => setViewMode('topology')} style={{ background: viewMode === 'topology' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🕸️ Topology</button>
+                  <button onClick={() => setViewMode('waterfall')} style={{ background: viewMode === 'waterfall' ? 'var(--primary)' : 'transparent', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem' }}>🌊 Waterfall</button>
                 </div>
               </div>
               <div>
@@ -412,7 +427,7 @@ export default function Home() {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              {viewMode === 'tree' ? renderTree(traceTree) : viewMode === 'swimlane' ? renderSwimlane(traceTree) : <TopologyGraph traces={traceTree} />}
+              {viewMode === 'tree' ? renderTree(traceTree) : viewMode === 'swimlane' ? renderSwimlane(traceTree) : viewMode === 'topology' ? <TopologyGraph traces={traceTree} /> : <TraceWaterfall trace={{ trace_id: selectedTraceId, start_time: traceTree[0]?.start_time, spans: traceTree }} />}
             </div>
           </div>
         </div>

@@ -7,9 +7,7 @@ export async function GET() {
   try {
     const traces = await prisma.spans.findMany({
       where: {
-        attributes: {
-          contains: '"gen_ai.agent.swarm.id"'
-        }
+        parent_span_id: null
       },
       orderBy: {
         start_time: 'desc'
