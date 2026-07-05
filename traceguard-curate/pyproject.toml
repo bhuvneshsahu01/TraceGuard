@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "traceguard-curate"
+name = "traceguard-ai-curate"
 version = "0.1.0"
 description = "TraceGuard Dataset Curation Pipeline"
 readme = "README.md"

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "traceguard-fuzz"
+name = "traceguard-ai-fuzz"
 version = "0.1.0"
 description = "TraceGuard Adversarial Fuzzer Module"
 readme = "README.md"
@@ -23,7 +23,7 @@ classifiers = [
 keywords = ["llm", "security", "fuzzing", "redteam"]
 
 dependencies = [
-    "traceguard"
+    "traceguard-ai"
 ]
 
 [project.urls]
