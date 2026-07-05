@@ -23,7 +23,8 @@ classifiers = [
 keywords = ["llm", "security", "fuzzing", "redteam"]
 
 dependencies = [
-    "traceguard-ai"
+    "traceguard-ai",
+    "traceguard-ai-run"
 ]
 
 [project.urls]
