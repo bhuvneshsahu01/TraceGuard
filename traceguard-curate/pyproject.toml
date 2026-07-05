@@ -21,14 +21,15 @@ classifiers = [
 ]
 keywords = ["llm", "dataset", "curation", "finetuning"]
 
-[project.urls]
-Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
-Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
     "pydantic>=2.0.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
+Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 
 [project.scripts]
 traceguard-curate = "traceguard_curate.cli:app"

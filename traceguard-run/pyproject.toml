@@ -22,9 +22,6 @@ classifiers = [
 ]
 keywords = ["llm", "evaluation", "metrics", "drift", "psi"]
 
-[project.urls]
-Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
-Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 dependencies = [
     "pydantic>=2.0.0",
     "numpy>=1.24.0",
@@ -33,6 +30,10 @@ dependencies = [
     "rich>=13.0.0",
     "traceguard"
 ]
+
+[project.urls]
+Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
+Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 
 [project.scripts]
 traceguard = "traceguard_run.cli:app"

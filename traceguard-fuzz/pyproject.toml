@@ -22,12 +22,13 @@ classifiers = [
 ]
 keywords = ["llm", "security", "fuzzing", "redteam"]
 
-[project.urls]
-Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
-Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 dependencies = [
     "traceguard"
 ]
+
+[project.urls]
+Homepage = "https://github.com/bhuvneshsahu01/TraceGuard"
+Repository = "https://github.com/bhuvneshsahu01/TraceGuard.git"
 
 [project.optional-dependencies]
 dev = [
