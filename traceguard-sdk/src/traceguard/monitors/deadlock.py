@@ -3,6 +3,11 @@ from typing import Dict, Set
 class SwarmDeadlockError(Exception):
     pass
 
+
+class AgentCycleException(SwarmDeadlockError):
+    """Raised when an agent enters a circular delegation or recursive tool execution loop."""
+    pass
+
 class SwarmCycleDetector:
     """
     GPT Phase 25: Real-time Swarm Deadlock Monitor.
@@ -50,7 +55,7 @@ class SwarmCycleDetector:
         for agent in list(self.delegation_graph.keys()):
             if agent not in visited:
                 if dfs(agent):
-                    raise SwarmDeadlockError(
+                    raise AgentCycleException(
                         f"Circular delegation loop detected! The swarm has deadlocked. "
                         f"Current Wait Graph: {self.delegation_graph}"
                     )
