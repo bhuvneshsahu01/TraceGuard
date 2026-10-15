@@ -8,11 +8,9 @@ Addresses Batch 2, Task 2.2 requirements.
 """
 
 import gc
-import statistics
 import time
 import tracemalloc
 from opentelemetry import trace
-import pytest
 
 from traceguard.decorators import guardrail
 

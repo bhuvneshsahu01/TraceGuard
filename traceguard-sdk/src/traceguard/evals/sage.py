@@ -1,12 +1,13 @@
 import math
 from typing import List, Any, Callable, Tuple
+from traceguard.evals.ks_test import KSTwoSampleTester
 
-def ks_test_stub(dist_a: List[float], dist_b: List[float]) -> float:
-    """Stub for Two-Sample Kolmogorov-Smirnov test returning a simulated p-value."""
-    if not dist_a or not dist_b: return 0.0
-    mean_a = sum(dist_a) / len(dist_a)
-    mean_b = sum(dist_b) / len(dist_b)
-    return max(0.01, 1.0 - abs(mean_a - mean_b))
+
+def ks_test(dist_a: List[float], dist_b: List[float]) -> float:
+    """Two-Sample Kolmogorov-Smirnov test returning p-value."""
+    if not dist_a or not dist_b:
+        return 0.0
+    return KSTwoSampleTester().test(dist_a, dist_b).p_value
 
 class SageEvaluator:
     """
@@ -81,22 +82,23 @@ class MultiAgentConsensusPanel:
         
     def evaluate(self, payload: Any) -> Tuple[float, float, float]:
         """Returns (aggregated_score, mean_logprob, ks_stability_p_value)"""
-        if not self.members: return 0.0, 0.0, 0.0
-        
+        if not self.members:
+            return 0.0, 0.0, 0.0
+
         scores = []
         logprobs = []
         for member in self.members:
             score, lp = member(payload)
             scores.append(score)
             logprobs.append(lp)
-            
+
         avg_score = sum(scores) / len(scores)
         avg_lp = sum(logprobs) / len(logprobs)
-        
+
         # Split into two arbitrary groups to check judgment distribution stability via KS test
         half = len(scores) // 2
-        p_value = ks_test_stub(scores[:half], scores[half:]) if len(scores) > 1 else 1.0
-        
+        p_value = ks_test(scores[:half], scores[half:]) if len(scores) > 1 else 1.0
+
         return avg_score, avg_lp, p_value
 
 class IsotonicCalibrator:

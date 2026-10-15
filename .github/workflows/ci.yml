@@ -1,65 +1,78 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main, master]
   pull_request:
-    branches: [ "main" ]
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  test-and-lint:
+    name: SDK Tests & Static Analysis (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-        package: [
-          "traceguard-sdk", 
-          "traceguard-run", 
-          "traceguard-fuzz", 
-          "traceguard-curate"
-        ]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
-    - name: Install hatch
-      run: pip install hatch
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e traceguard-sdk
+          pip install pytest pytest-asyncio pytest-cov hypothesis scipy opentelemetry-api opentelemetry-sdk ruff mypy
 
-    - name: Run Tests
-      working-directory: ${{ matrix.package }}
-      run: |
-        # In a real environment, you might run:
-        # hatch run dev:pytest
-        # For now, we simulate a passing test suite
-        echo "Running tests for ${{ matrix.package }}..."
-        python -c "print('All tests passed.')"
+      - name: Ruff Linter
+        run: |
+          ruff check traceguard-sdk tests
 
-    - name: Lint and Type Check
-      working-directory: ${{ matrix.package }}
-      run: |
-        # hatch run dev:ruff check .
-        # hatch run dev:mypy .
-        echo "Linting complete."
+      - name: MyPy Static Type Check
+        run: |
+          mypy traceguard-sdk/src --ignore-missing-imports
+
+      - name: Run Pytest Regression Suite
+        run: |
+          pytest tests/ -v --cov=traceguard --cov-report=xml --cov-report=term-missing
+
+      - name: Run Latency & Memory Benchmarks
+        run: |
+          python benchmarks/bench_otel_overhead.py
 
   dashboard-build:
+    name: Next.js Dashboard Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - name: Install dependencies
-      working-directory: traceguard-dashboard
-      run: npm install --legacy-peer-deps
-    - name: Generate Prisma Client
-      working-directory: traceguard-dashboard
-      run: npx prisma generate
-    - name: Build Dashboard
-      working-directory: traceguard-dashboard
-      run: npm run build
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: traceguard-dashboard/package.json
+
+      - name: Install dependencies
+        working-directory: traceguard-dashboard
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        working-directory: traceguard-dashboard
+        run: npx prisma generate
+
+      - name: Build Next.js Dashboard
+        working-directory: traceguard-dashboard
+        run: npm run build

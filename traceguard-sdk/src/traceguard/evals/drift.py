@@ -6,7 +6,7 @@ Integrates Population Stability Index (PSI) with bootstrap confidence intervals,
 and two-sample Kolmogorov-Smirnov (KS) tests to detect silent distribution degradation.
 """
 
-from typing import List, Optional
+from typing import List
 import numpy as np
 
 from traceguard.evals.ks_test import KSTwoSampleTester
