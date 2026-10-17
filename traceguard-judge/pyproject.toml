@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "traceguard-judge"
-version = "0.1.0"
+version = "0.2.0"
 description = "LLM-as-a-Judge Evaluation Engine for TraceGuard"
 authors = [
     {name = "TraceGuard Team", email = "team@traceguard.ai"}

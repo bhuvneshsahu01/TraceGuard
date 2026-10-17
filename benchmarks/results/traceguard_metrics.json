@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "timestamp": "2026-10-17T19:25:13.956972+00:00",
+    "random_seed": 42,
+    "python_version": "3.11.8 (tags/v3.11.8:db85d51, Feb  6 2024, 22:03:32) [MSC v.1937 64 bit (AMD64)]",
+    "traceguard_version": "0.2.0"
+  },
+  "benchmark_a_drift": {
+    "reference_distribution_size": 1000,
+    "window_size": 200,
+    "num_null_windows": 500,
+    "null_target_alpha": 0.05,
+    "null_false_alarms": 19,
+    "empirical_false_alarm_rate_pct": 3.8,
+    "num_shifted_windows": 500,
+    "injected_shift_description": "25% out-of-domain semantic shift (embedding latent shift delta=+0.65, mild +8% length, +12ms latency)",
+    "shift_detections": 448,
+    "empirical_detection_power_pct": 89.6,
+    "signal_breakdown": {
+      "mmd_detection_power_pct": 89.4,
+      "scalar_only_detection_power_pct": 16.0,
+      "categorical_detection_power_pct": 2.0,
+      "mmd_advantage_over_scalar_pct": 73.4
+    },
+    "execution_time_seconds": 149.23
+  },
+  "benchmark_b_latency": {
+    "T=128": {
+      "token_count": 128,
+      "char_count": 500,
+      "requests_count": 500,
+      "median_ms": 1.653,
+      "p95_ms": 2.996,
+      "p99_ms": 3.759
+    },
+    "T=256": {
+      "token_count": 256,
+      "char_count": 1068,
+      "requests_count": 500,
+      "median_ms": 1.825,
+      "p95_ms": 3.024,
+      "p99_ms": 3.951
+    }
+  },
+  "benchmark_b_prompt_injection": {
+    "dataset_name": "deepset/prompt-injections",
+    "dataset_split": "test",
+    "dataset_sha256": "7cce8711155e1352b05fe1952634467f7e5b4203c032fbf78f92f143736b8e1c",
+    "decision_threshold": 0.45,
+    "total_samples": 116,
+    "injections_count": 60,
+    "benign_count": 56,
+    "confusion_matrix": {
+      "tp": 46,
+      "fp": 1,
+      "tn": 55,
+      "fn": 14
+    },
+    "injection_recall_pct": 76.67,
+    "false_positive_rate_pct": 1.79,
+    "precision_pct": 97.87,
+    "accuracy_pct": 87.07
+  },
+  "cv_bracket_placeholders": {
+    "[FA]%": "3.8%",
+    "[PW]%": "89.6%",
+    "[SHIFT]": "25% out-of-domain semantic shift (embedding latent shift delta=+0.65, mild +8% length, +12ms latency)",
+    "[L] ms": "2.996 ms",
+    "[T]": 128,
+    "[R]%": "76.67%",
+    "[DATASET]": "deepset/prompt-injections",
+    "[FP]%": "1.79%"
+  }
+}

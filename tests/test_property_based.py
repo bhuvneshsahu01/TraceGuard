@@ -8,7 +8,7 @@ Addresses Batch 1, Task 1.3 requirements.
 """
 
 import json
-from hypothesis import given, settings, strategies as st
+from hypothesis import HealthCheck, given, settings, strategies as st
 import pytest
 
 from traceguard.firewall import (
@@ -54,7 +54,7 @@ class TestSerializationProperties:
     """Property-based verification of JSON serialization invariants."""
 
     @given(val=json_values)
-    @settings(max_examples=50)
+    @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow])
     def test_json_serialization_roundtrip_invariant(self, val):
         """Any valid JSON structure serializes and parses back to the original value."""
         serialized = _serialize_to_json(val)
@@ -63,7 +63,7 @@ class TestSerializationProperties:
         assert parsed == val
 
     @given(val=json_values)
-    @settings(max_examples=50)
+    @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow])
     def test_decorator_serializer_parity(self, val):
         """Decorator serializer produces identical output to firewall serializer."""
         s1 = _serialize_to_json(val)

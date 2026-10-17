@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "traceguard-ai-fuzz"
-version = "0.1.0"
+version = "0.2.0"
 description = "TraceGuard Adversarial Fuzzer Module"
 readme = "README.md"
 requires-python = ">=3.9"
