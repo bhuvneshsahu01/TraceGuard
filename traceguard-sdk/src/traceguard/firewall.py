@@ -1,7 +1,7 @@
 import json
 import uuid
 import re
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast, Optional
 import functools
 import inspect
 from opentelemetry import trace
@@ -59,9 +59,9 @@ def generate_ephemeral_credential() -> str:
     return f"tg_eph_{uuid.uuid4().hex[:12]}"
 
 def tool_firewall(
-    sanitize_paths: list[str] = None, 
-    redact_args: list[str] = None,
-    allowed_urls: list[str] = None,
+    sanitize_paths: Optional[list[str]] = None, 
+    redact_args: Optional[list[str]] = None,
+    allowed_urls: Optional[list[str]] = None,
     enforce_ephemeral_auth: bool = False
 ) -> Callable[[F], F]:
     """

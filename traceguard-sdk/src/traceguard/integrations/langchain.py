@@ -45,7 +45,7 @@ class TraceGuardCallbackHandler(BaseCallbackHandler):
             span.end()
             del self.run_spans[run_id]
 
-    def on_llm_error(self, error: Exception, *, run_id: UUID, parent_run_id: Optional[UUID] = None, **kwargs: Any) -> Any:
+    def on_llm_error(self, error: BaseException, *, run_id: UUID, parent_run_id: Optional[UUID] = None, **kwargs: Any) -> Any:
         """Run when LLM errors."""
         span = self.run_spans.get(run_id)
         if span:
@@ -73,7 +73,7 @@ class TraceGuardCallbackHandler(BaseCallbackHandler):
             span.end()
             del self.run_spans[run_id]
 
-    def on_chain_error(self, error: Exception, *, run_id: UUID, parent_run_id: Optional[UUID] = None, **kwargs: Any) -> Any:
+    def on_chain_error(self, error: BaseException, *, run_id: UUID, parent_run_id: Optional[UUID] = None, **kwargs: Any) -> Any:
         """Run when chain errors."""
         span = self.run_spans.get(run_id)
         if span:

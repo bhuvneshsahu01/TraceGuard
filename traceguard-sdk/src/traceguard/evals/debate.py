@@ -10,7 +10,7 @@ class ConstructorAuditorTriad:
     an Auditor to attack it, and a Judge to score the debate, neutralizing
     verbosity and positional biases.
     """
-    def __init__(self, llm_callable: Optional[Callable[[str], str]] = None, judge_callable: Callable[[str, str], Tuple[float, float]] = None):
+    def __init__(self, llm_callable: Optional[Callable[[str], str]] = None, judge_callable: Optional[Callable[[str, str], Tuple[float, float]]] = None):
         self.model = "groq/llama3-8b-8192"
         self.judge = judge_callable
         

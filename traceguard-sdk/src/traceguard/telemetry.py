@@ -11,14 +11,14 @@ class DualLayerTelemetry:
         self.redaction_engine = RealTimeRedactionEngine()
         self.secure_storage = ExternalStorageReference()
         
-    def start_root_span(self, task_name: str, attributes: Dict[str, Any] = None):
+    def start_root_span(self, task_name: str, attributes: Optional[Dict[str, Any]] = None):
         """Starts the overall user task span."""
         return self.tracer.start_as_current_span(
             task_name, 
             attributes={"openinference.span.kind": "CHAIN", **(attributes or {})}
         )
         
-    def start_internal_span(self, agent_name: str, span_kind: str = "AGENT", attributes: Dict[str, Any] = None):
+    def start_internal_span(self, agent_name: str, span_kind: str = "AGENT", attributes: Optional[Dict[str, Any]] = None):
         """Starts an internal reasoning/routing span."""
         return self.tracer.start_as_current_span(
             agent_name, 

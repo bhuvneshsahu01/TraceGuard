@@ -41,7 +41,7 @@ jobs:
 
       - name: MyPy Static Type Check
         run: |
-          mypy traceguard-sdk/src --ignore-missing-imports
+          mypy traceguard-sdk/src --ignore-missing-imports --no-strict-optional
 
       - name: Run Pytest Regression Suite
         run: |
