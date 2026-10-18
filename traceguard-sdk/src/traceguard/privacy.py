@@ -26,7 +26,7 @@ class RealTimeRedactionEngine:
         
     def redact_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Recursively redact a dictionary."""
-        redacted_payload = {}
+        redacted_payload: Dict[str, Any] = {}
         for k, v in payload.items():
             if isinstance(v, str):
                 redacted_payload[k] = self.redact(v)

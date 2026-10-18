@@ -16,7 +16,7 @@ class SwarmAnalyzer:
         
     def _build_agent_graph(self) -> Dict[str, Set[str]]:
         """Build a directed graph of agent delegations."""
-        graph = {}
+        graph: Dict[str, Set[str]] = {}
         for span in self.spans:
             agent = span.get("agent_id")
             parent_agent = span.get("parent_agent_id")
@@ -34,9 +34,9 @@ class SwarmAnalyzer:
         Returns a list of cycles (lists of agent IDs).
         """
         graph = self._build_agent_graph()
-        visited = set()
-        path = []
-        cycles = []
+        visited: Set[str] = set()
+        path: List[str] = []
+        cycles: List[List[str]] = []
         
         def dfs(node):
             if node in path:
