@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from opentelemetry import trace
 from .privacy import RealTimeRedactionEngine, ExternalStorageReference
 
@@ -25,7 +25,7 @@ class DualLayerTelemetry:
             attributes={"openinference.span.kind": span_kind, **(attributes or {})}
         )
         
-    def start_client_span(self, model_name: str, system_prompt: str, is_compliant_env: bool = False, swarm_id: str = None):
+    def start_client_span(self, model_name: str, system_prompt: str, is_compliant_env: bool = False, swarm_id: Optional[str] = None):
         """
         Starts an outbound LLM call span, mapped to `gen_ai.operation.name` = 'chat'.
         Applies redaction automatically.
@@ -57,7 +57,7 @@ class DualLayerTelemetry:
         safe_completion = self.redaction_engine.redact(completion_text)
         span.set_attribute("gen_ai.completion", safe_completion)
 
-    def start_rag_query_parent(self, query: str, swarm_id: str = None):
+    def start_rag_query_parent(self, query: str, swarm_id: Optional[str] = None):
         """Starts the parent context for a granular RAG pipeline."""
         attributes = {"openinference.span.kind": "CHAIN", "gen_ai.rag.query": query}
         if swarm_id:

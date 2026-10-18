@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Optional, Callable, Any
 
 class SemanticCacheLayer:
     """Converts queries to dense embeddings and serves cached responses if similarity > threshold."""
     def __init__(self, threshold: float = 0.95):
         self.threshold = threshold
-        self.cache = {}
+        self.cache: dict[Any, Any] = {}
         
     def get_cached_response(self, query_embedding: list[float]) -> Optional[str]:
         # Stub logic
@@ -49,7 +49,7 @@ class SemanticRouter:
             return "gpt-4o"
         return "llama-3.1-8b-instant"
         
-    def cascade_route(self, prompt: str, evaluator: callable = None) -> tuple[str, float]:
+    def cascade_route(self, prompt: str, evaluator: Optional[Callable[..., Any]] = None) -> tuple[str, float]:
         """
         GPT Phase 34: Universal Model Cascading (LiteLLM Integration).
         Executes a cheap model (e.g., groq/llama3-8b-8192). If low confidence, 
@@ -96,7 +96,7 @@ class AgentAsARouter:
     """Dynamic cost-quality routing using Context-Action-Feedback loop."""
     
     def __init__(self, monthly_budget_usd: float = 1000.0):
-        self.success_history = {}
+        self.success_history: dict[Any, Any] = {}
         self.monthly_budget_usd = monthly_budget_usd
         self.current_spend_usd = 0.0
         self.semantic_router = SemanticRouter()

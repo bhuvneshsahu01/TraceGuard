@@ -56,7 +56,7 @@ export default function LatencyHeatmap() {
               <YAxis dataKey="y" type="number" name="Latency (ms)" unit="ms" />
               <ZAxis dataKey="z" type="number" range={[50, 400]} name="Weight" />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} 
-                content={(props: { active?: boolean, payload?: any[] }) => {
+                content={(props: any) => {
                   const { active, payload } = props;
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;

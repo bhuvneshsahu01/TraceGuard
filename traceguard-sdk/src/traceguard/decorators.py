@@ -1,7 +1,7 @@
 """
 TraceGuard decorators for observing agent execution.
 """
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast, Optional
 import functools
 import inspect
 import json
@@ -125,7 +125,7 @@ def guardrail(direction: str = "input") -> Callable[[F], F]:
         return cast(F, sync_wrapper)
     return decorator
 
-def observe(model: str = None) -> Callable[[F], F]:
+def observe(model: Optional[str] = None) -> Callable[[F], F]:
     """
     A decorator to trace an agent's execution path, tracking 
     arguments, return values, latency, and financial unit economics.

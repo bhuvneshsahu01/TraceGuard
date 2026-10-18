@@ -203,7 +203,7 @@ def get_enterprise_exporters() -> list[SpanExporter]:
     If OTLP endpoint is set, adds OTLPSpanExporter (Phase 31).
     """
     import os
-    exporters = [SQLiteSpanExporter()]
+    exporters: list[SpanExporter] = [SQLiteSpanExporter()]
     
     otlp_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
     if otlp_endpoint:

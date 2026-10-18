@@ -16,11 +16,11 @@ class TraceGuardCallbackHandler(BaseCallbackHandler):
     Security Firewalls and OpenTelemetry Spans.
     """
     
-    def __init__(self, swarm_id: str = None):
+    def __init__(self, swarm_id: Optional[str] = None):
         self.swarm_id = swarm_id
         self.tg_telemetry = DualLayerTelemetry()
         # To maintain nested span contexts during LangChain callbacks, we keep a mapping of run_id to span
-        self.run_spans = {}
+        self.run_spans: Dict[UUID, Any] = {}
         
     def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], *, run_id: UUID, parent_run_id: Optional[UUID] = None, tags: Optional[List[str]] = None, metadata: Optional[Dict[str, Any]] = None, **kwargs: Any

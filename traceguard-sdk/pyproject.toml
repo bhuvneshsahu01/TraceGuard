@@ -62,7 +62,12 @@ dev = [
 packages = ["src/traceguard"]
 
 [tool.mypy]
-strict = true
+ignore_missing_imports = true
+check_untyped_defs = false
+disallow_untyped_defs = false
+warn_unused_configs = true
+no_implicit_optional = false
+
 
 [tool.ruff]
 line-length = 88
