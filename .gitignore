@@ -35,3 +35,6 @@ artifacts/
 test_traceguard/
 .vscode/
 for_me.md
+dist/
+*.egg-info/
+build/

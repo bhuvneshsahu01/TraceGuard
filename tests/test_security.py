@@ -4,8 +4,10 @@ from traceguard.monitors.exfil import SemanticDLPEngine
 def test_audio_sanitizer():
     sanitizer = AudioSanitizerAgent(ultrasonic_threshold_khz=20.0)
     
-    class MockSafeAudio: peak_frequency_khz = 10.0
-    class MockAttackAudio: peak_frequency_khz = 25.5
+    class MockSafeAudio:
+        peak_frequency_khz = 10.0
+    class MockAttackAudio:
+        peak_frequency_khz = 25.5
     
     res1 = sanitizer.sanitize_audio({"audio_data": MockSafeAudio()})
     assert res1["status"] == "CLEAN"

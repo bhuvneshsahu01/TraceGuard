@@ -11,11 +11,9 @@ Unit tests for traceguard.drift:
 """
 
 import numpy as np
-import pytest
 
 from traceguard.drift import (
     DriftMonitor,
-    DriftReport,
     calculate_psi,
     ks_two_sample_test,
     chi2_homogeneity_test,

@@ -20,7 +20,6 @@ from traceguard.firewall import (
 from traceguard.decorators import (
     _serialize_to_json as dec_serialize_to_json,
     _calculate_cost,
-    guardrail,
 )
 
 

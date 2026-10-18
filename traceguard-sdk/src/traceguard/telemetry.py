@@ -60,7 +60,8 @@ class DualLayerTelemetry:
     def start_rag_query_parent(self, query: str, swarm_id: str = None):
         """Starts the parent context for a granular RAG pipeline."""
         attributes = {"openinference.span.kind": "CHAIN", "gen_ai.rag.query": query}
-        if swarm_id: attributes["gen_ai.agent.swarm.id"] = swarm_id
+        if swarm_id:
+            attributes["gen_ai.agent.swarm.id"] = swarm_id
         return self.tracer.start_as_current_span("rag.query", attributes=attributes)
         
     def start_rag_embedding_span(self, model_name: str):

@@ -31,7 +31,7 @@ class ConstructorAuditorTriad:
         Runs the full Constructor/Auditor/Judge triad.
         Returns the calibrated (score, logprob_confidence) from the Judge.
         """
-        with tracer.start_as_current_span("eval.debate.triad") as root_span:
+        with tracer.start_as_current_span("eval.debate.triad"):
             
             # 1. Constructor Thread
             with tracer.start_as_current_span("agent.debate.constructor") as const_span:

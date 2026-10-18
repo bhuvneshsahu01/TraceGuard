@@ -14,7 +14,7 @@ import pytest
 
 from traceguard.finops.budget import AdaptiveBudgetMonitor, BudgetExceededError
 from traceguard.monitors.deadlock import SwarmCycleDetector, SwarmDeadlockError
-from traceguard.firewall import FirewallMutationContext, check_indirect_prompt_injection, TraceGuardFirewallBlock
+from traceguard.firewall import FirewallMutationContext
 from traceguard.decorators import guardrail
 
 

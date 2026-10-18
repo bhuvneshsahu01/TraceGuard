@@ -8,10 +8,8 @@ Unit tests for traceguard.guardrails:
 - TraceGuardMiddleware (FastAPI ASGI integration, token budget, OpenTelemetry headers)
 """
 
-import json
-import pytest
 from fastapi import FastAPI
-from fastapi.responses import PlainTextResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from starlette.testclient import TestClient
 
 from traceguard.guardrails import (

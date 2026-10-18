@@ -8,7 +8,7 @@ Tier 2: Presidio Analyzer/Anonymizer integration when available, with resilient 
 
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List
 
 
 def _luhn_checksum(card_number: str) -> bool:

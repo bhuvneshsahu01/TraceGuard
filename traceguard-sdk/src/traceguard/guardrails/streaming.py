@@ -6,7 +6,7 @@ Holds a sliding character tail buffer across chunk boundaries so PII split acros
 adjacent chunks is detected and redacted before flushing to the client.
 """
 
-from typing import Generator, List, Optional
+from typing import Optional
 from .pii import PIIRedactor
 
 
