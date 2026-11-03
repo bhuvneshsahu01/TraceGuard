@@ -94,6 +94,7 @@ All benchmark numbers are deterministic, seeded (`seed=42`), reproducible via a 
 | **Middleware Added Latency (p95, T=256)** | **3.024 ms** | Sub-3ms overhead | 500 requests, $T=256$ tokens (p50: 1.825 ms, p99: 3.951 ms) |
 | **Prompt Injection Recall** | **76.67%** | Gold-standard test split | Evaluated on public `deepset/prompt-injections` split ($N=116$) |
 | **Prompt Injection False Positive Rate** | **1.79%** | $\le 5.0\%$ FPR target | 56 benign prompts (Precision: 97.87%, Accuracy: 87.07%) |
+| **OOD Prompt Injection Recall** | **71.2% (712/1,000)** | Zero-shot OOD robustness | Evaluated on public `Lakera/gandalf_ignore_instructions` ($N=1,000$) |
 
 ---
 

@@ -69,6 +69,16 @@
     "[T]": 128,
     "[R]%": "76.67%",
     "[DATASET]": "deepset/prompt-injections",
-    "[FP]%": "1.79%"
+    "[FP]%": "1.79%",
+    "[OOD_R]%": "71.2%",
+    "[OOD_DATASET]": "Lakera/gandalf_ignore_instructions"
+  },
+  "benchmark_c_ood_gandalf": {
+    "dataset_name": "Lakera/gandalf_ignore_instructions",
+    "benchmark_type": "Out-Of-Distribution (OOD) Adversarial Prompt Injection",
+    "total_samples": 1000,
+    "detected_count": 712,
+    "ood_recall_pct": 71.2,
+    "status": "PASS"
   }
 }
